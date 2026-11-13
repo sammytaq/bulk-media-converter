@@ -1,0 +1,3961 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self' data:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'"
+    />
+    <title>Bulk Media Converter</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #1a1c1e;
+        --panel: #24272b;
+        --input: #2d3136;
+        --line: #32363c;
+        --text: #f1f3f5;
+        --muted: #8e959e;
+        --accent: #38b2ac;
+        --accent-light: #6ed3ca;
+        --danger: #ed9292;
+        --radius: 19px;
+        font-family:
+          "Segoe UI Variable",
+          "Segoe UI",
+          system-ui,
+          -apple-system,
+          sans-serif;
+        font-synthesis: none;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-size: 13px;
+        overflow: hidden;
+      }
+      button,
+      input,
+      select {
+        font: inherit;
+      }
+      button {
+        cursor: pointer;
+        color: inherit;
+      }
+      button:disabled {
+        cursor: default;
+        opacity: 0.4;
+      }
+      button,
+      input,
+      select {
+        outline: none;
+      }
+      button:focus-visible,
+      input:focus-visible,
+      select:focus-visible,
+      summary:focus-visible {
+        outline: 2px solid var(--accent-light);
+        outline-offset: 4px;
+      }
+      button {
+        transition:
+          background 0.16s,
+          border-color 0.16s,
+          box-shadow 0.16s,
+          transform 0.16s;
+      }
+      button:active:not(:disabled) {
+        transform: translateY(1px);
+      }
+      button:disabled:active {
+        transform: none;
+      }
+      button svg {
+        flex-shrink: 0;
+      }
+      svg.icon {
+        width: 20px;
+        height: 20px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.6;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        vertical-align: middle;
+      }
+      a {
+        color: var(--accent-light);
+      }
+      [hidden] {
+        display: none !important;
+      }
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+      button.plain {
+        border: 0;
+        background: none;
+      }
+      ::-webkit-scrollbar {
+        width: 5px;
+        height: 5px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #42484e;
+        border-radius: 10px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .titlebar {
+        height: 33px;
+        display: flex;
+        align-items: center;
+        padding-left: 24px;
+        border-bottom: 1px solid #ffffff04;
+        color: #767f87;
+        font-size: 10px;
+        letter-spacing: 1.3px;
+        user-select: none;
+      }
+      .titlebar-mark {
+        width: 6px;
+        height: 6px;
+        background: var(--accent);
+        border-radius: 2px;
+        margin-right: 9px;
+      }
+      .titlebar-spacer {
+        flex: 1;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        letter-spacing: 0.3px;
+        font-size: 10px;
+        color: #67717a;
+      }
+      .window-controls {
+        height: 100%;
+        display: flex;
+      }
+      .window-controls button {
+        width: 44px;
+        height: 100%;
+        border: 0;
+        background: none;
+        color: #8e959e;
+        display: grid;
+        place-items: center;
+      }
+      .window-controls button:hover {
+        background: #ffffff0a;
+      }
+      .window-controls button:last-child:hover {
+        background: #b44a51;
+        color: white;
+      }
+      .window-controls svg {
+        width: 13px;
+        height: 13px;
+        stroke-width: 1.3;
+      }
+      .app {
+        padding: 27px 32px 17px;
+        max-width: 1740px;
+        margin: auto;
+        height: calc(100vh - 33px);
+        display: flex;
+        flex-direction: column;
+      }
+      .app-header {
+        display: flex;
+        align-items: center;
+        gap: 22px;
+        min-height: 65px;
+        margin-bottom: 25px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        min-width: 0;
+      }
+      .logo {
+        width: 54px;
+        height: 54px;
+        flex-shrink: 0;
+        border-radius: 16px;
+        background: #303439;
+        border: 1px solid #43494e;
+        overflow: hidden;
+        box-shadow: 0 3px 12px #0003;
+        display: grid;
+        place-items: center;
+      }
+      .logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transform: scale(1.34);
+        mix-blend-mode: screen;
+      }
+      .brand h1 {
+        font-size: 25px;
+        font-weight: 750;
+        letter-spacing: -0.8px;
+        white-space: nowrap;
+        line-height: 1.3;
+      }
+      .brand p {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 5px;
+        letter-spacing: 0.05px;
+      }
+      .header-tools {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 9px;
+      }
+      .search {
+        display: flex;
+        align-items: center;
+        background: #26292d;
+        border: 1px solid var(--line);
+        border-radius: 25px;
+        padding: 0 13px;
+        width: 236px;
+        height: 42px;
+        gap: 9px;
+      }
+      .search svg {
+        width: 17px;
+        color: #89929b;
+      }
+      .search input {
+        width: 100%;
+        background: transparent;
+        border: 0;
+        color: var(--text);
+        font-size: 12px;
+      }
+      .search input::placeholder {
+        color: #838b94;
+      }
+      .keycap {
+        border: 1px solid #40464c;
+        color: #7b858e;
+        padding: 0 5px;
+        border-radius: 4px;
+        font-size: 10px;
+        line-height: 17px;
+      }
+      .icon-button {
+        width: 40px;
+        height: 40px;
+        border: 1px solid var(--line);
+        background: #292d31;
+        border-radius: 50%;
+        display: inline-grid;
+        place-items: center;
+        color: #a6aeb7;
+        flex-shrink: 0;
+      }
+      .icon-button:hover:not(:disabled) {
+        background: #343a40;
+        color: var(--text);
+        border-color: #4b545b;
+      }
+      .icon-button svg {
+        width: 18px;
+        height: 18px;
+      }
+      .app-body {
+        display: flex;
+        gap: 25px;
+        flex: 1;
+        min-height: 0;
+      }
+      .rail {
+        background: #232629;
+        border: 1px solid #30353a;
+        border-radius: 30px;
+        width: 60px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        padding: 10px 7px;
+        gap: 8px;
+        box-shadow: 0 8px 22px #0001;
+        margin-top: 44px;
+        margin-bottom: 28px;
+      }
+      .nav-button {
+        width: 43px;
+        height: 43px;
+        border: 0;
+        background: transparent;
+        display: grid;
+        place-items: center;
+        border-radius: 16px;
+        color: #8b959e;
+        position: relative;
+      }
+      .nav-button svg {
+        width: 20px;
+        height: 20px;
+      }
+      .nav-button:hover {
+        background: #30353a;
+        color: #d1d8dd;
+      }
+      .nav-button.active {
+        background: #38b2ac1a;
+        color: var(--accent-light);
+        box-shadow: inset 0 0 0 1px #38b2ac25;
+      }
+      .nav-button.active:before {
+        content: "";
+        position: absolute;
+        width: 3px;
+        height: 15px;
+        background: var(--accent);
+        border-radius: 3px;
+        left: -8px;
+      }
+      .rail-spacer {
+        flex: 1;
+      }
+      .rail-divider {
+        height: 1px;
+        width: 24px;
+        background: #373d43;
+        margin: 5px 0;
+      }
+      .rail-bottom {
+        color: #65737b;
+      }
+      .rail-bottom svg {
+        width: 17px;
+      }
+      .workspace {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+      }
+      .workspace-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: 0 1px 15px;
+        min-height: 29px;
+      }
+      .breadcrumb {
+        color: #7f8a93;
+        font-size: 10px;
+        letter-spacing: 1.7px;
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        font-weight: 600;
+      }
+      .breadcrumb span:last-child {
+        color: #c3cbd2;
+      }
+      .breadcrumb .slash {
+        font-size: 12px;
+        color: #4f5962;
+      }
+      .local-tag {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: #8c999f;
+        font-size: 11px;
+      }
+      .local-tag svg {
+        width: 13px;
+        height: 13px;
+        color: #71b3a6;
+      }
+      .local-tag .dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: #54b29e;
+      }
+      .banner {
+        background: #b18b3520;
+        border: 1px solid #a286414d;
+        color: #d8c797;
+        border-radius: 12px;
+        padding: 11px 14px;
+        margin-bottom: 14px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 12px;
+        flex-shrink: 0;
+      }
+      .banner .icon {
+        width: 17px;
+        height: 17px;
+        flex-shrink: 0;
+      }
+      .banner span {
+        flex: 1;
+      }
+      .text-button {
+        border: 0;
+        background: none;
+        padding: 3px 0;
+        color: var(--accent-light);
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .text-button:hover:not(:disabled) {
+        color: #a6ede6;
+      }
+      .banner .text-button {
+        color: #eee0b1;
+        white-space: nowrap;
+      }
+      .connection-warning {
+        background: #4e363636;
+        border-color: #805454;
+        color: #edb5b5;
+      }
+      .dashboard {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 350px;
+        gap: 20px;
+        flex: 1;
+        min-height: 0;
+      }
+      .left-stack,
+      .right-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        min-height: 0;
+      }
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        box-shadow: 0 5px 16px #0000000b;
+      }
+      .upload-card {
+        padding: 13px;
+        flex-shrink: 0;
+      }
+      .drop-zone {
+        border: 1px dashed #525b63;
+        border-radius: 13px;
+        min-height: 254px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        position: relative;
+        transition:
+          background 0.18s,
+          border-color 0.18s;
+      }
+      .drop-zone.dragging {
+        border-color: var(--accent-light);
+        background: #38b2ac0d;
+      }
+      .drop-zone.dragging:after {
+        content: "Drop to add to your queue";
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        background: #253431f2;
+        border-radius: 12px;
+        color: var(--accent-light);
+        font-size: 21px;
+        font-weight: 600;
+        pointer-events: none;
+      }
+      .upload-art {
+        width: 68px;
+        height: 62px;
+        margin-bottom: 14px;
+        color: #8c9da7;
+      }
+      .upload-art .back-file {
+        stroke: #4b5961;
+        stroke-dasharray: 3 4;
+      }
+      .upload-art .front-file {
+        fill: #313b42;
+        stroke: #93a6b2;
+      }
+      .drop-zone h2 {
+        font-size: 21px;
+        font-weight: 650;
+        letter-spacing: -0.45px;
+      }
+      .drop-zone > p {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 7px;
+      }
+      .upload-actions {
+        display: flex;
+        gap: 8px;
+        margin: 20px 0 14px;
+      }
+      .secondary-button {
+        border: 1px solid #454e56;
+        background: #353c43;
+        padding: 11px 16px;
+        border-radius: 10px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        box-shadow: 0 3px 9px #0002;
+      }
+      .secondary-button:hover:not(:disabled) {
+        background: #3d474e;
+        border-color: #5a6770;
+      }
+      .secondary-button svg {
+        width: 17px;
+        height: 17px;
+      }
+      .folder-add {
+        padding: 10px 11px;
+        background: #2b3035;
+        border-color: #3c444b;
+      }
+      .format-support {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        font-size: 10px;
+        color: #747f89;
+        letter-spacing: 0.3px;
+      }
+      .format-support span {
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+      .format-support svg {
+        width: 12px;
+        height: 12px;
+      }
+      .format-support i {
+        width: 3px;
+        height: 3px;
+        background: #515b64;
+        border-radius: 50%;
+      }
+      .queue-card {
+        flex: 1;
+        min-height: 190px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      .card-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 21px 21px 0;
+        gap: 14px;
+      }
+      .card-heading h2 {
+        font-size: 15px;
+        font-weight: 650;
+        letter-spacing: -0.2px;
+        display: flex;
+        align-items: center;
+        gap: 9px;
+      }
+      .count-badge {
+        font-size: 10px;
+        line-height: 20px;
+        min-width: 22px;
+        text-align: center;
+        padding: 0 6px;
+        color: #b8c3cd;
+        background: #373d43;
+        border-radius: 6px;
+        font-weight: 500;
+      }
+      .small-caption {
+        font-size: 11px;
+        color: #7e8993;
+        margin-top: 5px;
+      }
+      .queue-toolbar {
+        padding: 17px 20px 12px;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .filter-tab {
+        font-size: 11px;
+        background: transparent;
+        border: 1px solid transparent;
+        border-radius: 7px;
+        padding: 6px 10px;
+        color: #8e99a2;
+      }
+      .filter-tab:hover {
+        color: #e1e6ea;
+      }
+      .filter-tab.active {
+        background: #373e43;
+        border-color: #444e55;
+        color: #e5ecef;
+      }
+      .filter-tab b {
+        font-size: 10px;
+        margin-left: 5px;
+        font-weight: 500;
+        color: #85919b;
+      }
+      .queue-toolbar .toolbar-spacer {
+        flex: 1;
+      }
+      .clear-button {
+        font-size: 10px;
+        color: #8e9ba5;
+        border: 0;
+        background: none;
+        padding: 5px;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+      .clear-button .icon {
+        width: 13px;
+        height: 13px;
+      }
+      .clear-button:hover {
+        color: var(--accent-light);
+      }
+      .queue-list-head {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 83px 103px 30px;
+        gap: 10px;
+        margin: 0 22px;
+        padding: 0 0 10px;
+        color: #77838e;
+        font-size: 9px;
+        text-transform: uppercase;
+        letter-spacing: 1.1px;
+        border-bottom: 1px solid #373d43;
+      }
+      .queue-scroll {
+        overflow-y: auto;
+        min-height: 0;
+        flex: 1;
+        padding: 3px 13px 8px 17px;
+        scrollbar-gutter: stable;
+      }
+      .file-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 83px 103px 30px;
+        gap: 10px;
+        align-items: center;
+        min-height: 76px;
+        padding: 12px 7px;
+        border-bottom: 1px solid #343a3f;
+        position: relative;
+        border-radius: 8px;
+      }
+      .file-row:last-child {
+        border-bottom-color: transparent;
+      }
+      .file-row.selected {
+        background: #38b2ac09;
+        box-shadow: inset 2px 0 0 var(--accent);
+        padding-left: 9px;
+      }
+      .file-main {
+        display: flex;
+        align-items: center;
+        min-width: 0;
+        gap: 11px;
+        cursor: default;
+      }
+      .editable .file-main {
+        cursor: pointer;
+      }
+      .thumbnail {
+        width: 51px;
+        height: 47px;
+        border-radius: 9px;
+        flex-shrink: 0;
+        overflow: hidden;
+        background: #30383e;
+        position: relative;
+        display: grid;
+        place-items: center;
+        color: #7b929e;
+        border: 1px solid #ffffff06;
+      }
+      .thumbnail img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .thumbnail > .icon {
+        width: 22px;
+        height: 22px;
+      }
+      .video-play {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        background: #0002;
+      }
+      .video-play .icon {
+        width: 19px;
+        height: 19px;
+        fill: #ffffffe0;
+        stroke: white;
+        filter: drop-shadow(0 1px 3px #000);
+      }
+      .file-info {
+        min-width: 0;
+        flex: 1;
+      }
+      .filename {
+        font-size: 12px;
+        font-weight: 500;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        display: block;
+        color: #e2e7eb;
+        max-width: 100%;
+        border: 0;
+        background: none;
+        padding: 1px 0;
+        text-align: left;
+      }
+      .filename:hover {
+        color: var(--accent-light);
+      }
+      .file-detail {
+        color: #7d8994;
+        font-size: 10px;
+        margin-top: 5px;
+        display: block;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .file-note {
+        font-size: 10px;
+        color: #c7b386;
+        margin-top: 5px;
+        max-width: 100%;
+        display: block;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .file-error {
+        color: var(--danger);
+      }
+      .format-pill {
+        display: inline-block;
+        font-size: 9px;
+        font-weight: 650;
+        letter-spacing: 0.6px;
+        padding: 5px 7px;
+        border: 1px solid #454f59;
+        border-radius: 5px;
+        background: #333b43;
+        color: #aabac7;
+        justify-self: start;
+      }
+      .format-pill.video {
+        color: #b2b1c8;
+        background: #373641;
+        border-color: #4c4a5b;
+      }
+      .status-cell {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 7px;
+        min-width: 0;
+      }
+      .status-tag {
+        font-size: 9px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 8px;
+        border-radius: 20px;
+        line-height: 1;
+        white-space: nowrap;
+        background: #373d42;
+        color: #a8b2ba;
+        letter-spacing: 0.1px;
+      }
+      .status-tag:before {
+        content: "";
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: currentColor;
+        opacity: 0.85;
+      }
+      .status-tag.done {
+        background: #38b2ac17;
+        color: #6bc5b5;
+      }
+      .status-tag.error {
+        background: #d9818117;
+        color: #e29999;
+      }
+      .status-tag.converting {
+        background: #38b2ac1c;
+        color: #78d8cf;
+      }
+      .mini-progress {
+        height: 3px;
+        width: 88px;
+        background: #181d20;
+        border-radius: 3px;
+        overflow: hidden;
+      }
+      .mini-progress span {
+        height: 100%;
+        display: block;
+        background: var(--accent);
+        border-radius: 3px;
+        transition: width 0.25s;
+      }
+      .remove-button {
+        width: 25px;
+        height: 27px;
+        border: 0;
+        background: transparent;
+        border-radius: 6px;
+        color: #6d7a85;
+        display: grid;
+        place-items: center;
+      }
+      .remove-button svg {
+        width: 14px;
+        height: 14px;
+      }
+      .remove-button:hover:not(:disabled) {
+        color: #edaaaa;
+        background: #e59a9a0c;
+      }
+      .remove-button.open-row:hover {
+        color: var(--accent-light);
+        background: #38b2ac0c;
+      }
+      .queue-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 180px;
+        height: 100%;
+        padding: 25px;
+        text-align: center;
+      }
+      .empty-icon {
+        width: 54px;
+        height: 54px;
+        border-radius: 17px;
+        background: #2d3439;
+        border: 1px solid #3b454d;
+        display: grid;
+        place-items: center;
+        color: #758d9a;
+        margin-bottom: 15px;
+      }
+      .empty-icon .icon {
+        width: 25px;
+        height: 25px;
+      }
+      .queue-empty h3 {
+        font-size: 13px;
+        font-weight: 550;
+        color: #b7c1c9;
+      }
+      .queue-empty p {
+        font-size: 11px;
+        color: #73808b;
+        margin-top: 6px;
+        line-height: 1.7;
+      }
+      .queue-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 11px 21px;
+        border-top: 1px solid var(--line);
+        color: #7f8d96;
+        font-size: 10px;
+        min-height: 36px;
+      }
+      .queue-footer .accent {
+        color: #72beb2;
+        display: flex;
+        gap: 6px;
+        align-items: center;
+      }
+      .queue-footer svg {
+        width: 12px;
+        height: 12px;
+      }
+      .load-more {
+        display: block;
+        margin: 12px auto;
+        background: #30383f;
+        color: #bac6cf;
+        border: 1px solid #424d55;
+        border-radius: 8px;
+        padding: 8px 16px;
+        font-size: 11px;
+      }
+      .settings-card {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        padding: 22px 23px 19px;
+      }
+      .settings-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 22px;
+      }
+      .settings-heading h2 {
+        font-size: 15px;
+        font-weight: 650;
+        letter-spacing: -0.2px;
+      }
+      .settings-heading .icon {
+        width: 17px;
+        height: 17px;
+        color: #81929e;
+      }
+      .settings-context {
+        border-radius: 7px;
+        padding: 7px 9px;
+        background: #38b2ac13;
+        color: var(--accent-light);
+        font-size: 10px;
+        margin-top: -10px;
+        margin-bottom: 15px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
+      .control-label {
+        color: #c5ced5;
+        font-size: 11px;
+        font-weight: 500;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 9px;
+      }
+      .label-kicker {
+        color: #707d88;
+        font-size: 9px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 10px;
+      }
+      .format-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+      }
+      .format-control label {
+        display: flex;
+        gap: 5px;
+        align-items: center;
+        font-size: 10px;
+        color: #8e9ca7;
+        margin-bottom: 7px;
+      }
+      .format-control svg {
+        width: 13px;
+        height: 13px;
+      }
+      select {
+        width: 100%;
+        appearance: none;
+        background-color: var(--input);
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%239aa8b3' stroke-width='1.5'%3E%3Cpath d='m4 6 4 4 4-4'/%3E%3C/svg%3E");
+        background-position: right 10px center;
+        background-repeat: no-repeat;
+        border: 1px solid #3b434b;
+        border-radius: 9px;
+        padding: 11px 30px 11px 11px;
+        color: #d8e0e6;
+        font-size: 12px;
+        cursor: pointer;
+      }
+      select:hover {
+        border-color: #59656f;
+      }
+      option {
+        background: #2d3136;
+      }
+      .section-divider {
+        border: 0;
+        border-top: 1px solid #383f45;
+        margin: 18px 0;
+      }
+      .toggle-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+      }
+      .toggle-label strong {
+        font-weight: 500;
+        color: #d6dde2;
+        font-size: 12px;
+      }
+      .toggle-label p {
+        color: #7f8c96;
+        font-size: 10px;
+        margin-top: 5px;
+      }
+      .switch {
+        position: relative;
+        display: inline-block;
+        width: 34px;
+        height: 19px;
+        flex-shrink: 0;
+      }
+      .switch input {
+        position: absolute;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        cursor: pointer;
+        z-index: 1;
+      }
+      .switch-track {
+        display: block;
+        width: 100%;
+        height: 100%;
+        background: #171d21;
+        border: 1px solid #414b53;
+        border-radius: 20px;
+        transition: 0.2s;
+      }
+      .switch-track:after {
+        content: "";
+        position: absolute;
+        width: 13px;
+        height: 13px;
+        left: 3px;
+        top: 3px;
+        background: #8996a0;
+        border-radius: 50%;
+        transition: 0.2s;
+      }
+      .switch input:checked + .switch-track {
+        background: #287e79;
+        border-color: #3bb3a9;
+      }
+      .switch input:checked + .switch-track:after {
+        transform: translateX(15px);
+        background: #c2f2e8;
+      }
+      .switch input:focus-visible + .switch-track {
+        outline: 2px solid var(--accent-light);
+        outline-offset: 4px;
+      }
+      .preset-label {
+        margin: 20px 0 10px;
+      }
+      .preset-options {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        background: #202428;
+        border: 1px solid #30383f;
+        border-radius: 10px;
+        padding: 7px 9px;
+      }
+      .preset-option {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        font-size: 11px;
+        cursor: pointer;
+        min-height: 28px;
+        color: #a5b1ba;
+      }
+      .preset-option input {
+        appearance: none;
+        width: 13px;
+        height: 13px;
+        border: 1.5px solid #52616b;
+        border-radius: 50%;
+        margin: 0;
+        display: grid;
+        place-items: center;
+      }
+      .preset-option input:checked {
+        border-color: var(--accent-light);
+      }
+      .preset-option input:checked:after {
+        content: "";
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--accent-light);
+      }
+      .preset-option:has(input:checked) {
+        color: #e5eeee;
+      }
+      .preset-option .preset-hint {
+        font-size: 9px;
+        color: #6e7c86;
+        margin-left: auto;
+      }
+      .slider-label {
+        margin-bottom: 11px;
+      }
+      .slider-label output {
+        font-variant-numeric: tabular-nums;
+        color: var(--accent-light);
+        font-size: 11px;
+      }
+      .range {
+        appearance: none;
+        width: 100%;
+        height: 4px;
+        border-radius: 5px;
+        background: linear-gradient(to right, var(--accent) 100%, #151b1f 100%);
+        display: block;
+        margin: 0;
+        cursor: pointer;
+      }
+      .range::-webkit-slider-thumb {
+        appearance: none;
+        width: 13px;
+        height: 13px;
+        background: #a2ded5;
+        border: 2px solid #c3f2e9;
+        border-radius: 50%;
+        box-shadow: 0 1px 5px #0007;
+      }
+      .range::-moz-range-thumb {
+        width: 11px;
+        height: 11px;
+        background: #a2ded5;
+        border: 2px solid #c3f2e9;
+        border-radius: 50%;
+      }
+      .range-scale {
+        display: flex;
+        justify-content: space-between;
+        font-size: 9px;
+        color: #667680;
+        margin-top: 8px;
+      }
+      .quality-control {
+        margin-top: 20px;
+      }
+      .max-width-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 15px;
+        color: #80909a;
+        font-size: 10px;
+      }
+      .max-width-row input {
+        width: 85px;
+        background: #1f2529;
+        border: 1px solid #3b454e;
+        border-radius: 6px;
+        color: #c3d0d8;
+        padding: 5px 7px;
+        font-size: 10px;
+        margin-left: auto;
+      }
+      .output-label {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: 17px 0 8px;
+        font-size: 10px;
+        color: #a6b5bf;
+      }
+      .output-label .text-button {
+        font-size: 9px;
+      }
+      .output-control {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid #3c464e;
+        background: #20262a;
+        border-radius: 8px;
+        padding: 9px 10px;
+        width: 100%;
+        color: #9aaab5;
+        font-size: 10px;
+        text-align: left;
+      }
+      .output-control:hover {
+        border-color: #637b83;
+      }
+      .output-control .icon {
+        width: 14px;
+        height: 14px;
+        color: #7f969f;
+      }
+      .output-control span {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        flex: 1;
+      }
+      .output-control .chevron {
+        width: 12px;
+        height: 12px;
+      }
+      .preset-save {
+        color: #8599a6;
+        font-size: 10px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        justify-content: center;
+        width: 100%;
+        margin-top: 13px;
+        padding: 4px;
+      }
+      .preset-save svg {
+        width: 12px;
+        height: 12px;
+      }
+      .preset-explanation {
+        font-size: 9px;
+        color: #71828b;
+        line-height: 1.6;
+        margin-top: 12px;
+      }
+      .summary-card {
+        padding: 19px 22px 17px;
+        flex-shrink: 0;
+      }
+      .summary-stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+        margin-bottom: 16px;
+      }
+      .summary-stat {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+      .summary-stat:last-child {
+        padding-left: 21px;
+        border-left: 1px solid #3c444b;
+      }
+      .summary-stat > span {
+        color: #87969f;
+        font-size: 10px;
+      }
+      .summary-stat strong {
+        font-size: 22px;
+        font-weight: 650;
+        letter-spacing: -0.6px;
+        line-height: 1.2;
+      }
+      .summary-stat:last-child strong {
+        font-size: 18px;
+        letter-spacing: -0.4px;
+        padding-top: 3px;
+      }
+      .summary-stat small {
+        font-size: 10px;
+        color: #7c8a94;
+        font-weight: 400;
+        margin-left: 5px;
+      }
+      .convert-button {
+        background: linear-gradient(105deg, #235e5c50, #25494b25);
+        border: 1px solid #399f9a;
+        border-radius: 9px;
+        width: 100%;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        color: #6cdbd0;
+        font-size: 13px;
+        font-weight: 750;
+        letter-spacing: 0.9px;
+        box-shadow:
+          0 0 14px #38b2ac09,
+          inset 0 0 12px #38b2ac04;
+      }
+      .convert-button:hover:not(:disabled) {
+        background: #2a77754d;
+        border-color: #6cd7cd;
+        box-shadow: 0 0 20px #38b2ac17;
+      }
+      .convert-button svg {
+        width: 17px;
+        height: 17px;
+      }
+      .convert-button.stop {
+        color: #ecc0a2;
+        border-color: #a27760;
+        background: #805b3e1a;
+      }
+      .summary-footnote {
+        font-size: 9px;
+        color: #6c7f89;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        margin-top: 10px;
+      }
+      .summary-footnote svg {
+        width: 11px;
+        height: 11px;
+      }
+      .batch-track {
+        height: 3px;
+        border-radius: 4px;
+        background: #151b1f;
+        margin-bottom: 12px;
+        overflow: hidden;
+      }
+      .batch-track span {
+        display: block;
+        background: var(--accent);
+        height: 100%;
+        transition: width 0.3s;
+      }
+      .completion {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 12px;
+        background: #38b2ac12;
+        border: 1px solid #38b2ac30;
+        border-radius: 9px;
+        margin-bottom: 12px;
+        color: #84cbbc;
+        font-size: 10px;
+        gap: 7px;
+      }
+      .completion button {
+        font-size: 10px;
+      }
+      .app-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: #60717b;
+        font-size: 9px;
+        margin: 12px 1px 0;
+        letter-spacing: 0.2px;
+        flex-shrink: 0;
+        min-height: 15px;
+      }
+      .app-footer span {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .app-footer .icon {
+        width: 11px;
+        height: 11px;
+      }
+      .app-footer .version {
+        color: #50616c;
+      }
+      .footer-status {
+        max-width: 70%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .spinner {
+        width: 11px;
+        height: 11px;
+        border: 1.5px solid #47635e;
+        border-top-color: var(--accent-light);
+        border-radius: 50%;
+        display: inline-block;
+        animation: spin 0.8s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .secondary-view {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        padding: 2px 3px 10px;
+      }
+      .view-intro {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: 2px 0 23px;
+        gap: 20px;
+      }
+      .view-intro h2 {
+        font-size: 25px;
+        font-weight: 650;
+        letter-spacing: -0.7px;
+      }
+      .view-intro p {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 7px;
+      }
+      .history-summary {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+      .history-stat {
+        padding: 19px 22px;
+        flex: 1;
+      }
+      .history-stat > span {
+        display: block;
+        color: #93a0aa;
+        font-size: 11px;
+        margin-bottom: 9px;
+      }
+      .history-stat strong {
+        font-size: 24px;
+        font-weight: 600;
+      }
+      .history-card {
+        padding: 8px 21px;
+      }
+      .history-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 110px 150px 80px 70px;
+        gap: 14px;
+        align-items: center;
+        padding: 18px 0;
+        border-bottom: 1px solid #363e44;
+      }
+      .history-row:last-child {
+        border: 0;
+      }
+      .history-row .file-main > .icon {
+        color: #879eaa;
+        width: 22px;
+        height: 22px;
+        margin-right: 3px;
+      }
+      .history-row .file-detail {
+        max-width: 100%;
+      }
+      .history-row .history-date {
+        font-size: 10px;
+        color: #82949f;
+        line-height: 1.6;
+      }
+      .history-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 4px;
+      }
+      .history-actions button {
+        width: 29px;
+        height: 29px;
+        background: #30383d;
+        border: 1px solid #414c54;
+        border-radius: 7px;
+        color: #9cb2bd;
+      }
+      .history-actions svg {
+        width: 13px;
+        height: 13px;
+      }
+      .history-actions button:hover {
+        color: var(--accent-light);
+        border-color: #508c87;
+      }
+      .format-route {
+        color: #a6b9c6;
+        font-size: 10px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .format-route .icon {
+        width: 12px;
+        height: 12px;
+        color: #687f8c;
+      }
+      .preset-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 17px;
+      }
+      .preset-card {
+        padding: 23px;
+        min-height: 218px;
+        display: flex;
+        flex-direction: column;
+      }
+      .preset-card .preset-icon {
+        width: 39px;
+        height: 39px;
+        border-radius: 11px;
+        display: grid;
+        place-items: center;
+        color: var(--accent-light);
+        background: #38b2ac17;
+        border: 1px solid #38b2ac26;
+        margin-bottom: 18px;
+      }
+      .preset-card .preset-icon svg {
+        width: 20px;
+        height: 20px;
+      }
+      .preset-card h3 {
+        font-size: 15px;
+        font-weight: 600;
+        line-height: 1.5;
+        word-break: break-word;
+      }
+      .preset-card > p {
+        font-size: 11px;
+        color: #879aa7;
+        line-height: 1.7;
+        margin: 6px 0 19px;
+      }
+      .preset-card-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: auto;
+      }
+      .preset-chip {
+        font-size: 9px;
+        color: #7f9aab;
+        letter-spacing: 1px;
+      }
+      .custom-preset-title {
+        font-size: 12px;
+        color: #a0b1be;
+        margin: 28px 0 14px;
+        display: flex;
+        gap: 9px;
+        align-items: center;
+      }
+      .custom-empty {
+        padding: 27px;
+        border-style: dashed;
+        color: #7f929e;
+        font-size: 12px;
+        text-align: center;
+      }
+      .settings-view-grid {
+        display: grid;
+        grid-template-columns: 1.3fr 1fr;
+        gap: 20px;
+        align-items: start;
+      }
+      .settings-view-card {
+        padding: 25px;
+      }
+      .settings-view-card h3 {
+        font-size: 14px;
+        margin-bottom: 7px;
+        font-weight: 600;
+      }
+      .settings-view-card > p {
+        font-size: 11px;
+        color: #8598a6;
+        line-height: 1.8;
+        margin-bottom: 21px;
+      }
+      .settings-view-card .toggle-row {
+        padding: 16px 0;
+        border-top: 1px solid #394249;
+      }
+      .settings-view-card .toggle-label p {
+        line-height: 1.6;
+        max-width: 350px;
+      }
+      .tool-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #acb7bf;
+        background: #1e2428;
+        border: 1px solid #39464e;
+        border-radius: 9px;
+        padding: 13px;
+        font-size: 11px;
+        word-break: break-all;
+      }
+      .tool-status.ready {
+        color: #83c9b9;
+        border-color: #3b7063;
+      }
+      .tool-status .icon {
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+      }
+      .tool-buttons {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin: 16px 0 12px;
+      }
+      .tool-buttons .secondary-button {
+        font-size: 10px;
+        padding: 9px 11px;
+      }
+      .settings-view-card .tool-note {
+        font-size: 10px;
+        color: #718795;
+        margin: 15px 0 0;
+        line-height: 1.8;
+      }
+      .settings-detail-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 18px;
+        font-size: 11px;
+        padding: 13px 0;
+        border-top: 1px solid #38434b;
+        color: #879ba9;
+      }
+      .settings-detail-row span:last-child {
+        color: #c2d1da;
+        text-align: right;
+      }
+      .settings-about {
+        font-size: 11px;
+        color: #8297a5;
+        line-height: 1.8;
+        margin-top: 15px;
+      }
+      .toast-container {
+        position: fixed;
+        bottom: 28px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 100;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        pointer-events: none;
+        max-width: 70vw;
+      }
+      .toast {
+        background: #35423f;
+        border: 1px solid #548e7f;
+        padding: 12px 18px;
+        border-radius: 11px;
+        box-shadow: 0 8px 30px #0005;
+        font-size: 12px;
+        color: #d0e6de;
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        pointer-events: auto;
+        animation: toastin 0.18s ease-out;
+        line-height: 1.5;
+      }
+      .toast.error {
+        background: #443539;
+        border-color: #98616a;
+        color: #f0c6cd;
+      }
+      .toast .icon {
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+      }
+      @keyframes toastin {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      dialog {
+        background: #282e33;
+        color: var(--text);
+        border: 1px solid #46565f;
+        border-radius: 18px;
+        padding: 28px;
+        width: 420px;
+        box-shadow: 0 25px 90px #0009;
+      }
+      dialog::backdrop {
+        background: #0c1115b8;
+        backdrop-filter: blur(3px);
+      }
+      dialog h2 {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 9px;
+      }
+      dialog p {
+        font-size: 12px;
+        color: #9aadb9;
+        line-height: 1.8;
+        margin-bottom: 22px;
+      }
+      dialog label {
+        font-size: 11px;
+        color: #b2c1cb;
+        display: block;
+        margin-bottom: 9px;
+      }
+      dialog input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #4a5d69;
+        background: #1d252a;
+        border-radius: 9px;
+        color: var(--text);
+      }
+      .dialog-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 9px;
+        margin-top: 24px;
+      }
+      .dialog-actions .convert-button {
+        width: auto;
+        padding: 0 20px;
+        letter-spacing: 0;
+        font-weight: 600;
+      }
+      .preview-note {
+        color: #b9b49a;
+        background: #9e86431a;
+        border: 1px solid #9784523b;
+        font-size: 11px;
+        border-radius: 8px;
+        padding: 9px 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 13px;
+      }
+      .preview-note code {
+        font-size: 10px;
+        color: #e0d9b9;
+      }
+      @media (min-height: 970px) {
+        .drop-zone {
+          min-height: 285px;
+        }
+        .settings-card {
+          padding-top: 26px;
+        }
+        .section-divider {
+          margin: 23px 0;
+        }
+        .quality-control {
+          margin-top: 25px;
+        }
+        .output-label {
+          margin-top: 22px;
+        }
+        .settings-heading {
+          margin-bottom: 25px;
+        }
+        .preset-options {
+          padding: 9px;
+        }
+        .preset-option {
+          min-height: 31px;
+        }
+      }
+      @media (max-height: 850px) {
+        .app {
+          padding-top: 18px;
+        }
+        .app-header {
+          margin-bottom: 15px;
+          min-height: 56px;
+        }
+        .drop-zone {
+          min-height: 207px;
+          padding: 18px;
+        }
+        .upload-art {
+          width: 50px;
+          height: 45px;
+          margin-bottom: 8px;
+        }
+        .drop-zone h2 {
+          font-size: 19px;
+        }
+        .upload-actions {
+          margin: 15px 0 10px;
+        }
+        .settings-card {
+          padding: 18px 20px;
+        }
+        .settings-heading {
+          margin-bottom: 17px;
+        }
+        .section-divider {
+          margin: 14px 0;
+        }
+        .preset-label {
+          margin-top: 16px;
+        }
+        .preset-option {
+          min-height: 26px;
+        }
+        .quality-control {
+          margin-top: 17px;
+        }
+        .preset-explanation {
+          margin-top: 8px;
+        }
+        .summary-card {
+          padding: 14px 20px;
+        }
+        .summary-stats {
+          margin-bottom: 12px;
+        }
+        .summary-footnote {
+          margin-top: 8px;
+        }
+        .card-heading {
+          padding-top: 17px;
+        }
+        .queue-toolbar {
+          padding-top: 13px;
+        }
+        .banner {
+          padding: 9px 12px;
+        }
+        .left-stack,
+        .right-stack {
+          gap: 15px;
+        }
+      }
+      @media (max-width: 1180px) {
+        .app {
+          padding-left: 23px;
+          padding-right: 23px;
+        }
+        .brand h1 {
+          font-size: 21px;
+        }
+        .brand p {
+          font-size: 11px;
+        }
+        .brand {
+          gap: 12px;
+        }
+        .header-tools {
+          gap: 6px;
+        }
+        .search {
+          width: 200px;
+        }
+        .icon-button {
+          width: 35px;
+          height: 35px;
+        }
+        .app-body {
+          gap: 18px;
+        }
+        .dashboard {
+          grid-template-columns: minmax(0, 1fr) 315px;
+          gap: 16px;
+        }
+        .rail {
+          width: 55px;
+        }
+        .queue-list-head,
+        .file-row {
+          grid-template-columns: minmax(0, 1fr) 57px 87px 23px;
+          gap: 8px;
+        }
+        .file-main {
+          gap: 8px;
+        }
+        .thumbnail {
+          width: 42px;
+          height: 42px;
+        }
+        .filename {
+          font-size: 11px;
+        }
+        .queue-toolbar {
+          padding-left: 16px;
+          padding-right: 14px;
+        }
+        .filter-tab {
+          padding: 6px 8px;
+        }
+        .mini-progress {
+          width: 77px;
+        }
+        .settings-card {
+          padding-left: 19px;
+          padding-right: 19px;
+        }
+        .history-row {
+          grid-template-columns: minmax(0, 1fr) 90px 110px 64px 62px;
+        }
+        .preset-grid {
+          gap: 13px;
+        }
+        .preset-card {
+          padding: 20px;
+        }
+        .settings-view-grid {
+          grid-template-columns: 1.2fr 1fr;
+        }
+        .drop-zone > p {
+          font-size: 11px;
+        }
+      }
+      @media (max-width: 950px) {
+        body {
+          overflow: auto;
+        }
+        .app {
+          height: auto;
+          min-height: calc(100vh - 33px);
+          padding: 20px;
+        }
+        .app-header {
+          flex-wrap: wrap;
+        }
+        .header-tools {
+          margin-left: 0;
+          width: 100%;
+        }
+        .search {
+          flex: 1;
+        }
+        .app-body {
+          min-height: 650px;
+        }
+        .dashboard {
+          grid-template-columns: 1fr;
+        }
+        .right-stack {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          align-items: start;
+        }
+        .settings-card {
+          max-height: none;
+        }
+        .queue-card {
+          min-height: 300px;
+          max-height: 480px;
+        }
+        .rail {
+          margin-top: 44px;
+          margin-bottom: 0;
+        }
+        .workspace-heading {
+          gap: 10px;
+        }
+        .local-tag {
+          font-size: 10px;
+        }
+        .left-stack {
+          min-height: 580px;
+        }
+        .preset-grid,
+        .settings-view-grid {
+          grid-template-columns: 1fr;
+        }
+        .secondary-view {
+          overflow: visible;
+        }
+        .history-row {
+          grid-template-columns: minmax(0, 1fr) 80px 80px;
+        }
+        .history-date,
+        .history-row > .status-tag {
+          display: none;
+        }
+        .history-summary {
+          flex-wrap: wrap;
+        }
+        .history-stat {
+          min-width: 140px;
+        }
+        .breadcrumb {
+          font-size: 9px;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *:before,
+        *:after {
+          animation: none !important;
+          transition: none !important;
+        }
+      }
+    </style>
+    <style>
+      .dashboard {
+        grid-template-columns: minmax(0, 1.85fr) minmax(335px, 1fr);
+      }
+      .settings-card {
+        padding: 17px 23px 15px;
+      }
+      .settings-heading {
+        margin-bottom: 13px;
+      }
+      .label-kicker {
+        margin-bottom: 8px;
+      }
+      .format-control label {
+        margin-bottom: 6px;
+      }
+      .settings-card select {
+        padding-top: 9px;
+        padding-bottom: 9px;
+      }
+      .settings-card .section-divider {
+        margin: 10px 0;
+      }
+      .settings-card .preset-label {
+        margin: 14px 0 8px;
+      }
+      .settings-card .preset-options {
+        padding: 5px 9px;
+        gap: 1px;
+      }
+      .settings-card .preset-option {
+        min-height: 25px;
+      }
+      .settings-card .slider-label {
+        margin-bottom: 9px;
+      }
+      .settings-card .range-scale {
+        margin-top: 7px;
+      }
+      .settings-card .quality-control {
+        margin-top: 13px;
+      }
+      .settings-card .max-width-row {
+        margin-top: 10px;
+      }
+      .settings-card .output-label {
+        margin: 10px 0 7px;
+      }
+      .settings-card .output-control {
+        padding: 8px 10px;
+      }
+      .settings-card .preset-explanation {
+        display: none;
+      }
+      .summary-card {
+        padding-top: 16px;
+        padding-bottom: 16px;
+      }
+      .summary-stats {
+        margin-bottom: 12px;
+      }
+      .summary-footnote {
+        display: none;
+      }
+      .format-pill.audio {
+        color: #cbb99b;
+        background: #3c3831;
+        border-color: #544b3d;
+      }
+      @media (max-height: 920px) {
+        .settings-card .range-scale {
+          display: none;
+        }
+        .completion {
+          background: none;
+          border: 0;
+          padding: 0;
+          margin-bottom: 10px;
+        }
+        .completion .text-button {
+          padding: 0;
+        }
+      }
+      @media (max-width: 700px) {
+        .right-stack {
+          grid-template-columns: 1fr;
+        }
+        .titlebar-spacer {
+          visibility: hidden;
+        }
+        .format-support {
+          flex-wrap: wrap;
+          justify-content: center;
+          gap: 8px;
+        }
+      }
+      .settings-heading .text-button:hover {
+        color: var(--accent-light);
+      }
+      @media (max-width: 1180px) {
+        .dashboard {
+          grid-template-columns: minmax(0, 1fr) 315px;
+        }
+        .settings-card {
+          padding-left: 19px;
+          padding-right: 19px;
+        }
+      }
+      @media (max-width: 950px) {
+        .dashboard {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <svg
+      aria-hidden="true"
+      style="position: absolute; width: 0; height: 0; overflow: hidden"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <defs>
+        <symbol id="i-audio" viewBox="0 0 24 24">
+          <path d="M9 18V5l11-2v13M9 9l11-2" />
+          <ellipse cx="6" cy="18" rx="3" ry="3" />
+          <ellipse cx="17" cy="16" rx="3" ry="3" />
+        </symbol>
+        <symbol id="i-grid" viewBox="0 0 24 24">
+          <rect x="3" y="3" width="7" height="7" rx="2" />
+          <rect x="14" y="3" width="7" height="7" rx="2" />
+          <rect x="3" y="14" width="7" height="7" rx="2" />
+          <rect x="14" y="14" width="7" height="7" rx="2" />
+        </symbol>
+        <symbol id="i-history" viewBox="0 0 24 24">
+          <path d="M3 11a9 9 0 1 1 2.6 7M3 4v7h7" />
+          <path d="M12 7v5l3 2" />
+        </symbol>
+        <symbol id="i-sliders" viewBox="0 0 24 24">
+          <path d="M4 6h8m5 0h3M4 12h3m5 0h8M4 18h9m5 0h2" />
+          <circle cx="14.5" cy="6" r="2.5" />
+          <circle cx="9.5" cy="12" r="2.5" />
+          <circle cx="15.5" cy="18" r="2.5" />
+        </symbol>
+        <symbol id="i-settings" viewBox="0 0 24 24">
+          <path
+            d="m9.2 3-.7 2-2 .9-2-.4L2.8 8.6l1.3 1.6v3.6l-1.3 1.6 1.7 3.1 2-.4 2 .9.7 2h3.6l.7-2 2-.9 2 .4 1.7-3.1-1.3-1.6v-3.6l1.3-1.6-1.7-3.1-2 .4-2-.9-.7-2z"
+            transform="translate(1)"
+          />
+          <circle cx="12" cy="12" r="3" />
+        </symbol>
+        <symbol id="i-search" viewBox="0 0 24 24">
+          <circle cx="10.5" cy="10.5" r="6.5" />
+          <path d="m16 16 4 4" />
+        </symbol>
+        <symbol id="i-folder" viewBox="0 0 24 24">
+          <path
+            d="M3 7V5a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v2M3 7h6l2 3h10l-2 10H3z"
+          />
+        </symbol>
+        <symbol id="i-image" viewBox="0 0 24 24">
+          <rect x="3" y="3" width="18" height="18" rx="3" />
+          <circle cx="8" cy="8" r="1.5" />
+          <path d="m3 17 6-6 4 4 3-3 5 5" />
+        </symbol>
+        <symbol id="i-video" viewBox="0 0 24 24">
+          <rect x="3" y="5" width="13" height="14" rx="3" />
+          <path d="m16 10 5-3v10l-5-3" />
+        </symbol>
+        <symbol id="i-plus" viewBox="0 0 24 24">
+          <path d="M12 5v14M5 12h14" />
+        </symbol>
+        <symbol id="i-x" viewBox="0 0 24 24">
+          <path d="m6 6 12 12M6 18 18 6" />
+        </symbol>
+        <symbol id="i-arrow" viewBox="0 0 24 24">
+          <path d="M4 12h15m-5-5 5 5-5 5" />
+        </symbol>
+        <symbol id="i-check" viewBox="0 0 24 24">
+          <path d="m5 12 4 4L19 6" />
+        </symbol>
+        <symbol id="i-checks" viewBox="0 0 24 24">
+          <path d="m2 12 4 4L16 6m-5 8 2 2L23 6" />
+        </symbol>
+        <symbol id="i-shield" viewBox="0 0 24 24">
+          <path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6z" />
+          <path d="m8 12 3 3 5-6" />
+        </symbol>
+        <symbol id="i-lock" viewBox="0 0 24 24">
+          <rect x="5" y="10" width="14" height="11" rx="3" />
+          <path d="M8 10V7a4 4 0 0 1 8 0v3m-4 5v2" />
+        </symbol>
+        <symbol id="i-bolt" viewBox="0 0 24 24">
+          <path d="m13 2-9 12h7l-1 8 10-13h-7z" />
+        </symbol>
+        <symbol id="i-info" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 11v6m0-10v.1" />
+        </symbol>
+        <symbol id="i-save" viewBox="0 0 24 24">
+          <path d="M5 3h12l4 4v14H3V3zm2 0v6h10V3M7 21v-8h10v8" />
+        </symbol>
+        <symbol id="i-trash" viewBox="0 0 24 24">
+          <path d="M3 6h18M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7m4-7v7" />
+        </symbol>
+        <symbol id="i-refresh" viewBox="0 0 24 24">
+          <path
+            d="M20 10a8 8 0 0 0-14-4L3 9m0-6v6h6M4 14a8 8 0 0 0 14 4l3-3m0 6v-6h-6"
+          />
+        </symbol>
+        <symbol id="i-play" viewBox="0 0 24 24">
+          <path d="m8 5 11 7-11 7z" />
+        </symbol>
+        <symbol id="i-stop" viewBox="0 0 24 24">
+          <rect x="6" y="6" width="12" height="12" rx="2" />
+        </symbol>
+        <symbol id="i-chevron" viewBox="0 0 24 24">
+          <path d="m9 5 7 7-7 7" />
+        </symbol>
+        <symbol id="i-minimize" viewBox="0 0 24 24">
+          <path d="M5 12h14" />
+        </symbol>
+        <symbol id="i-maximize" viewBox="0 0 24 24">
+          <rect x="5" y="5" width="14" height="14" rx="1" />
+        </symbol>
+        <symbol id="i-spark" viewBox="0 0 24 24">
+          <path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5z" />
+        </symbol>
+      </defs>
+    </svg>
+    <div class="titlebar pywebview-drag-region">
+      <span class="titlebar-mark"></span>BMC
+      <span style="margin-left: 9px; color: #4c5962; letter-spacing: 0.5px"
+        >/ &nbsp; THE LOCAL MEDIA TOOLKIT</span
+      >
+      <div class="titlebar-spacer pywebview-drag-region">
+        A new format. The same possibilities.
+      </div>
+      <div class="window-controls">
+        <button aria-label="Minimize window" data-native="minimize">
+          <svg class="icon"><use href="#i-minimize" /></svg></button
+        ><button aria-label="Maximize or restore window" data-native="maximize">
+          <svg class="icon"><use href="#i-maximize" /></svg></button
+        ><button aria-label="Close application" data-native="close">
+          <svg class="icon"><use href="#i-x" /></svg>
+        </button>
+      </div>
+    </div>
+    <div class="app">
+      <header class="app-header">
+        <div class="brand">
+          <div class="logo">
+            <img src="assets/logo.png" alt="Bulk Media Converter mascot" />
+          </div>
+          <div>
+            <h1>BULK MEDIA CONVERTER</h1>
+            <p>Batch process your media effortlessly.</p>
+          </div>
+        </div>
+        <div class="header-tools">
+          <label class="search"
+            ><svg class="icon"><use href="#i-search" /></svg
+            ><input
+              id="search"
+              type="search"
+              aria-label="Search files by name or format"
+              placeholder="Search your files…"
+              autocomplete="off"
+            /><span class="keycap">/</span></label
+          ><button
+            class="icon-button"
+            id="header-clear"
+            title="Clear completed files"
+            aria-label="Clear completed files"
+          >
+            <svg class="icon"><use href="#i-checks" /></svg></button
+          ><button
+            class="icon-button"
+            id="header-output"
+            title="Open output folder"
+            aria-label="Open output folder"
+          >
+            <svg class="icon"><use href="#i-folder" /></svg></button
+          ><button
+            class="icon-button"
+            data-view="settings"
+            title="Settings"
+            aria-label="Open settings"
+          >
+            <svg class="icon"><use href="#i-settings" /></svg>
+          </button>
+        </div>
+      </header>
+      <div class="app-body">
+        <nav class="rail" aria-label="Main navigation">
+          <button
+            class="nav-button active"
+            data-view="converter"
+            title="Converter dashboard"
+            aria-label="Converter dashboard"
+            aria-current="page"
+          >
+            <svg class="icon"><use href="#i-grid" /></svg></button
+          ><button
+            class="nav-button"
+            data-view="history"
+            title="Batch queue history"
+            aria-label="Batch queue history"
+          >
+            <svg class="icon"><use href="#i-history" /></svg></button
+          ><button
+            class="nav-button"
+            data-view="presets"
+            title="Presets manager"
+            aria-label="Presets manager"
+          >
+            <svg class="icon"><use href="#i-sliders" /></svg>
+          </button>
+          <div class="rail-divider"></div>
+          <button
+            class="nav-button"
+            data-view="settings"
+            title="Settings"
+            aria-label="Settings"
+          >
+            <svg class="icon"><use href="#i-settings" /></svg>
+          </button>
+          <div class="rail-spacer"></div>
+          <button
+            class="nav-button rail-bottom"
+            id="help-button"
+            title="About and keyboard shortcuts"
+            aria-label="About and keyboard shortcuts"
+          >
+            <svg class="icon"><use href="#i-info" /></svg>
+          </button>
+          <div class="rail-divider"></div>
+          <span
+            class="nav-button rail-bottom"
+            title="Your media stays on your device"
+            ><svg class="icon"><use href="#i-shield" /></svg
+          ></span>
+        </nav>
+        <main class="workspace">
+          <div class="workspace-heading">
+            <div class="breadcrumb">
+              WORKSPACE <span class="slash">/</span
+              ><span id="view-name">CONVERTER</span>
+            </div>
+            <div class="local-tag">
+              <span class="dot"></span>100% local
+              <span style="color: #475861; margin: 0 3px">·</span> Made for your
+              media
+            </div>
+          </div>
+          <div class="preview-note" id="preview-note" hidden>
+            <span
+              >Interface preview · Native file access is available in the
+              desktop app.</span
+            ><code>python app.py</code>
+          </div>
+          <div class="banner" id="ffmpeg-banner" hidden>
+            <svg class="icon"><use href="#i-info" /></svg
+            ><span
+              >Video and audio conversion need FFmpeg. Photo conversion is ready
+              to go.</span
+            ><button class="text-button" data-view="settings">
+              Set up FFmpeg <svg class="icon"><use href="#i-arrow" /></svg>
+            </button>
+          </div>
+          <div class="banner connection-warning" id="connection-banner" hidden>
+            <svg class="icon"><use href="#i-info" /></svg
+            ><span
+              >Connection interrupted. Reconnecting to the desktop app…</span
+            >
+          </div>
+          <section
+            class="dashboard"
+            id="view-converter"
+            aria-label="Converter dashboard"
+          >
+            <div class="left-stack">
+              <section class="card upload-card">
+                <div class="drop-zone" id="drop-zone">
+                  <svg
+                    class="upload-art"
+                    viewBox="0 0 76 68"
+                    fill="none"
+                    stroke-width="1.3"
+                    aria-hidden="true"
+                  >
+                    <g transform="rotate(-14 24 28)" class="back-file">
+                      <rect x="7" y="9" width="31" height="42" rx="4" />
+                    </g>
+                    <g transform="rotate(15 56 28)" class="back-file">
+                      <path
+                        d="M47 6h14l10 10v31a3 3 0 0 1-3 3H47a3 3 0 0 1-3-3V9a3 3 0 0 1 3-3z"
+                      />
+                      <path d="M61 6v11h10" />
+                    </g>
+                    <path
+                      class="front-file"
+                      d="M25 13h19l12 12v34a4 4 0 0 1-4 4H25a4 4 0 0 1-4-4V17a4 4 0 0 1 4-4z"
+                    />
+                    <path
+                      stroke="#93a6b2"
+                      d="M44 13v12h12m-18 27V33m-7 7 7-7 7 7m-16 7v7h18v-7"
+                    />
+                  </svg>
+                  <h2>Drag and Drop Files Here</h2>
+                  <p>
+                    Photos, videos, audio, or entire folders. All in one batch.
+                  </p>
+                  <div class="upload-actions">
+                    <button class="secondary-button" id="add-files">
+                      <svg class="icon"><use href="#i-plus" /></svg>Add Photos /
+                      Videos / Audio</button
+                    ><button
+                      class="secondary-button folder-add"
+                      id="add-folders"
+                      title="Add folders, including subfolders"
+                      aria-label="Add folders"
+                    >
+                      <svg class="icon"><use href="#i-folder" /></svg>
+                    </button>
+                  </div>
+                  <div class="format-support">
+                    <span
+                      ><svg class="icon"><use href="#i-audio" /></svg>MP3, WAV,
+                      FLAC +6</span
+                    ><i></i>
+                    <span
+                      ><svg class="icon"><use href="#i-image" /></svg>JPG, PNG,
+                      WEBP +5</span
+                    ><i></i
+                    ><span
+                      ><svg class="icon"><use href="#i-video" /></svg>MP4, MOV,
+                      MKV +3</span
+                    >
+                  </div>
+                </div>
+              </section>
+              <section class="card queue-card" aria-labelledby="queue-heading">
+                <div class="card-heading">
+                  <div>
+                    <h2 id="queue-heading">
+                      Your queue
+                      <span class="count-badge" id="queue-count">0</span>
+                    </h2>
+                    <p class="small-caption" id="queue-caption">
+                      A home for your next batch.
+                    </p>
+                  </div>
+                  <button class="text-button" id="retry-errors" hidden>
+                    <svg class="icon" style="width: 13px; height: 13px">
+                      <use href="#i-refresh" /></svg
+                    >Retry failed
+                  </button>
+                </div>
+                <div
+                  class="queue-toolbar"
+                  role="group"
+                  aria-label="Filter queue"
+                >
+                  <button class="filter-tab active" data-filter="all">
+                    All files <b id="filter-all">0</b></button
+                  ><button class="filter-tab" data-filter="image">
+                    Photos <b id="filter-image">0</b></button
+                  ><button class="filter-tab" data-filter="video">
+                    Videos <b id="filter-video">0</b></button
+                  ><button class="filter-tab" data-filter="audio">
+                    Audio <b id="filter-audio">0</b></button
+                  ><span class="toolbar-spacer"></span
+                  ><button
+                    class="clear-button"
+                    id="queue-clear"
+                    title="Remove completed files from queue"
+                  >
+                    <svg class="icon"><use href="#i-checks" /></svg>Clear done
+                  </button>
+                </div>
+                <div class="queue-list-head" id="queue-list-head" hidden>
+                  <span>File name</span><span>Format</span><span>Status</span
+                  ><span></span>
+                </div>
+                <div class="queue-scroll" id="queue-scroll">
+                  <div class="queue-empty" id="queue-empty">
+                    <div class="empty-icon">
+                      <svg class="icon"><use href="#i-image" /></svg>
+                    </div>
+                    <h3>Your next batch starts here</h3>
+                    <p>
+                      Add your photos, videos, and audio above.<br />We’ll keep
+                      the originals safe.
+                    </p>
+                  </div>
+                  <div id="queue-list"></div>
+                  <button class="load-more" id="load-more" hidden>
+                    Show more files
+                  </button>
+                </div>
+                <div class="queue-footer">
+                  <span id="queue-size">0 files · 0 B</span
+                  ><span class="accent"
+                    ><svg class="icon"><use href="#i-shield" /></svg>Originals
+                    stay untouched</span
+                  >
+                </div>
+              </section>
+            </div>
+            <aside class="right-stack" aria-label="Conversion controls">
+              <section class="card settings-card">
+                <div class="settings-heading">
+                  <h2>Conversion settings</h2>
+                  <button
+                    class="plain text-button"
+                    id="save-preset"
+                    title="Save as a custom preset"
+                    aria-label="Save as a custom preset"
+                  >
+                    <svg class="icon"><use href="#i-save" /></svg>
+                  </button>
+                </div>
+                <div
+                  class="settings-context"
+                  id="settings-context"
+                  hidden
+                ></div>
+                <div class="label-kicker">Output format</div>
+                <div class="format-grid">
+                  <div class="format-control">
+                    <label for="image-format"
+                      ><svg class="icon"><use href="#i-image" /></svg
+                      >Photos</label
+                    ><select id="image-format">
+                      <option value="jpeg">JPG</option>
+                      <option value="png">PNG</option>
+                      <option value="webp">WEBP</option>
+                      <option value="avif">AVIF</option>
+                      <option value="bmp">BMP</option>
+                      <option value="tiff">TIFF</option>
+                      <option value="gif">GIF</option>
+                    </select>
+                  </div>
+                  <div class="format-control">
+                    <label for="video-format"
+                      ><svg class="icon"><use href="#i-video" /></svg
+                      >Videos</label
+                    ><select id="video-format">
+                      <option value="mp4">MP4</option>
+                      <option value="mkv">MKV</option>
+                      <option value="mov">MOV</option>
+                      <option value="webm">WEBM</option>
+                      <option value="avi">AVI</option>
+                      <option value="flv">FLV</option>
+                    </select>
+                  </div>
+                  <div class="format-control">
+                    <label for="audio-format"
+                      ><svg class="icon"><use href="#i-audio" /></svg
+                      >Audio</label
+                    >
+                    <select id="audio-format">
+                      <option value="mp3">MP3</option>
+                      <option value="wav">WAV</option>
+                      <option value="flac">FLAC</option>
+                      <option value="m4a">M4A</option>
+                      <option value="aac">AAC</option>
+                      <option value="ogg">OGG</option>
+                      <option value="opus">OPUS</option>
+                      <option value="aiff">AIFF</option>
+                      <option value="wma">WMA</option>
+                    </select>
+                  </div>
+                </div>
+                <hr class="section-divider" />
+                <div class="toggle-row">
+                  <div class="toggle-label">
+                    <strong>Bulk actions</strong>
+                    <p id="bulk-description">Apply settings to every file</p>
+                  </div>
+                  <label class="switch"
+                    ><input
+                      id="bulk-toggle"
+                      type="checkbox"
+                      role="switch"
+                      aria-label="Apply settings to all files"
+                      checked /><span class="switch-track"></span
+                  ></label>
+                </div>
+                <div class="control-label preset-label">Preset</div>
+                <div
+                  class="preset-options"
+                  id="preset-options-info"
+                  role="radiogroup"
+                  aria-label="Conversion preset"
+                >
+                  <label class="preset-option"
+                    ><input
+                      type="radio"
+                      name="preset"
+                      value="source"
+                      checked
+                    />Same as source<span class="preset-hint"
+                      >Original size</span
+                    ></label
+                  ><label class="preset-option"
+                    ><input
+                      type="radio"
+                      name="preset"
+                      value="compress"
+                    />Compress<span class="preset-hint"
+                      >Smaller files</span
+                    ></label
+                  ><label class="preset-option"
+                    ><input type="radio" name="preset" value="custom" />Match
+                    Output<span class="preset-hint">Your settings</span></label
+                  >
+                </div>
+                <hr class="section-divider" />
+                <label class="control-label slider-label" for="resolution"
+                  >Resolution <output id="resolution-value">100%</output></label
+                ><input
+                  class="range"
+                  id="resolution"
+                  type="range"
+                  min="25"
+                  max="100"
+                  value="100"
+                />
+                <div class="range-scale">
+                  <span>25%</span><span>Original size</span>
+                </div>
+                <div class="quality-control">
+                  <label class="control-label slider-label" for="quality"
+                    >Quality <output id="quality-value">95%</output></label
+                  ><input
+                    class="range"
+                    id="quality"
+                    type="range"
+                    min="1"
+                    max="100"
+                    value="95"
+                  />
+                  <div class="range-scale">
+                    <span>Smaller file</span><span>Higher quality</span>
+                  </div>
+                </div>
+                <label class="max-width-row" for="max-width"
+                  >Max. width
+                  <input
+                    id="max-width"
+                    type="number"
+                    min="0"
+                    max="16384"
+                    value="0"
+                    step="1"
+                    aria-label="Maximum output width in pixels, zero for unlimited"
+                  /><span>px</span></label
+                >
+                <div class="output-label">
+                  <span>Save to</span
+                  ><button
+                    class="text-button"
+                    id="reset-output"
+                    title="Save next to each source"
+                    hidden
+                  >
+                    Reset
+                  </button>
+                </div>
+                <button
+                  class="output-control"
+                  id="choose-output"
+                  title="Choose output folder"
+                >
+                  <svg class="icon"><use href="#i-folder" /></svg
+                  ><span id="output-path">Source folder / converted</span
+                  ><svg class="icon chevron"><use href="#i-chevron" /></svg>
+                </button>
+                <p class="preset-explanation" id="preset-explanation">
+                  Keeps original dimensions at high quality. Output formats are
+                  selected above.
+                </p>
+              </section>
+              <section class="card summary-card">
+                <div class="completion" id="completion" hidden>
+                  <span id="completion-text">Batch complete</span
+                  ><button class="text-button" id="completion-output">
+                    Open folder
+                    <svg class="icon" style="width: 12px; height: 12px">
+                      <use href="#i-arrow" />
+                    </svg>
+                  </button>
+                </div>
+                <div class="summary-stats">
+                  <div class="summary-stat">
+                    <span>Total files</span
+                    ><strong id="total-files">0 <small>in queue</small></strong>
+                  </div>
+                  <div class="summary-stat">
+                    <span>Estimated time</span
+                    ><strong id="estimated-time">—</strong>
+                  </div>
+                </div>
+                <div class="batch-track" id="batch-track" hidden>
+                  <span id="batch-progress"></span>
+                </div>
+                <button class="convert-button" id="convert-all" disabled>
+                  <svg class="icon"><use href="#i-bolt" /></svg
+                  ><span>CONVERT ALL</span
+                  ><svg class="icon" style="width: 15px; height: 15px">
+                    <use href="#i-arrow" />
+                  </svg>
+                </button>
+                <div class="summary-footnote">
+                  <svg class="icon"><use href="#i-lock" /></svg>On your device.
+                  On your terms.
+                </div>
+              </section>
+            </aside>
+          </section>
+          <section
+            class="secondary-view"
+            id="view-history"
+            aria-label="Batch history"
+            hidden
+          >
+            <div class="view-intro">
+              <div>
+                <h2>A little conversion history.</h2>
+                <p>Your last 200 conversions, ready when you need them.</p>
+              </div>
+              <button class="secondary-button" id="clear-history">
+                <svg class="icon"><use href="#i-trash" /></svg>Clear history
+              </button>
+            </div>
+            <div class="history-summary" id="history-summary"></div>
+            <div class="card history-card" id="history-list"></div>
+          </section>
+          <section
+            class="secondary-view"
+            id="view-presets"
+            aria-label="Presets manager"
+            hidden
+          >
+            <div class="view-intro">
+              <div>
+                <h2>Find your flow.</h2>
+                <p>Start with a favorite. Make it your own.</p>
+              </div>
+              <button class="secondary-button" id="new-preset">
+                <svg class="icon"><use href="#i-plus" /></svg>Save current
+                settings
+              </button>
+            </div>
+            <div class="preset-grid" id="builtin-presets"></div>
+            <h3 class="custom-preset-title">
+              Your custom presets
+              <span class="count-badge" id="custom-count">0</span>
+            </h3>
+            <div class="preset-grid" id="custom-presets"></div>
+            <div class="card custom-empty" id="custom-empty">
+              Your favorite settings belong here. Save a preset from the
+              converter to get started.
+            </div>
+          </section>
+          <section
+            class="secondary-view"
+            id="view-settings"
+            aria-label="Application settings"
+            hidden
+          >
+            <div class="view-intro">
+              <div>
+                <h2>Just the way you like it.</h2>
+                <p>A few thoughtful defaults for every batch.</p>
+              </div>
+              <span class="count-badge" style="padding: 5px 10px">v1.0.0</span>
+            </div>
+            <div class="settings-view-grid">
+              <div class="card settings-view-card">
+                <h3>Video &amp; audio engine</h3>
+                <p>
+                  FFmpeg handles video and audio conversion on your device. Use
+                  an installation on PATH, or choose the executable directly.
+                </p>
+                <div class="tool-status" id="tool-status">
+                  <svg class="icon"><use href="#i-info" /></svg
+                  ><span>Checking FFmpeg…</span>
+                </div>
+                <div class="tool-buttons">
+                  <button class="secondary-button" id="choose-ffmpeg">
+                    <svg class="icon"><use href="#i-folder" /></svg>Choose
+                    FFmpeg</button
+                  ><button class="secondary-button" id="recheck-ffmpeg">
+                    <svg class="icon"><use href="#i-refresh" /></svg
+                    >Recheck</button
+                  ><button class="secondary-button" id="system-ffmpeg">
+                    Use PATH
+                  </button>
+                </div>
+                <button class="text-button" id="ffmpeg-help">
+                  FFmpeg installation guide
+                  <svg class="icon" style="width: 14px; height: 14px">
+                    <use href="#i-arrow" />
+                  </svg>
+                </button>
+                <p class="tool-note">
+                  Windows: install a full FFmpeg build, then choose ffmpeg.exe
+                  from its bin folder. FFprobe is optional. Photos work
+                  independently of FFmpeg.
+                </p>
+                <hr class="section-divider" />
+                <h3>Batch behavior</h3>
+                <div class="toggle-row">
+                  <div class="toggle-label">
+                    <strong>Keep media metadata</strong>
+                    <p>
+                      Retain compatible EXIF and color profiles. Disable to
+                      remove photo location and camera details from outputs.
+                    </p>
+                  </div>
+                  <label class="switch"
+                    ><input
+                      type="checkbox"
+                      role="switch"
+                      id="preserve-metadata"
+                      aria-label="Preserve media metadata"
+                      checked /><span class="switch-track"></span
+                  ></label>
+                </div>
+                <div class="toggle-row">
+                  <div class="toggle-label">
+                    <strong>Open folder after conversion</strong>
+                    <p>
+                      Open the most recent output folder when a batch finishes.
+                    </p>
+                  </div>
+                  <label class="switch"
+                    ><input
+                      type="checkbox"
+                      role="switch"
+                      id="open-after"
+                      aria-label="Open output folder after conversion" /><span
+                      class="switch-track"
+                    ></span
+                  ></label>
+                </div>
+              </div>
+              <div class="card settings-view-card">
+                <h3>A few things to know</h3>
+                <p>
+                  Built to make batch conversion feel a little more effortless.
+                </p>
+                <div class="settings-detail-row">
+                  <span>Original files</span><span>Always preserved</span>
+                </div>
+                <div class="settings-detail-row">
+                  <span>Duplicate filenames</span
+                  ><span>Numbered automatically</span>
+                </div>
+                <div class="settings-detail-row">
+                  <span>Default output</span><span>Source / converted</span>
+                </div>
+                <div class="settings-detail-row">
+                  <span>Folder imports</span><span>Includes subfolders</span>
+                </div>
+                <div class="settings-detail-row">
+                  <span>Network uploads</span><span>None. Ever.</span>
+                </div>
+                <div class="settings-detail-row">
+                  <span>Keyboard shortcuts</span
+                  ><span>Ctrl+O · Ctrl+Enter · /</span>
+                </div>
+                <div class="settings-about">
+                  Animated formats keep multiple frames when supported by the
+                  output format. Static formats use the first frame. Video
+                  outputs keep the first video and audio tracks.
+                </div>
+                <hr class="section-divider" />
+                <div class="local-tag">
+                  <svg class="icon"><use href="#i-shield" /></svg>Built for your
+                  files. Respectful of your privacy.
+                </div>
+              </div>
+            </div>
+          </section>
+          <footer class="app-footer">
+            <span class="footer-status" id="footer-status"
+              ><span class="spinner"></span>Connecting to your desktop…</span
+            ><span class="version"
+              >BULK MEDIA CONVERTER
+              <span style="margin: 0 4px; color: #374b58">/</span> v1.0.0</span
+            >
+          </footer>
+        </main>
+      </div>
+    </div>
+    <div
+      class="toast-container"
+      id="toasts"
+      role="status"
+      aria-live="polite"
+    ></div>
+    <dialog id="preset-dialog">
+      <form id="preset-form">
+        <h2>Keep a good thing.</h2>
+        <p>
+          Save the current conversion settings so your next batch is one click
+          away.
+        </p>
+        <label for="preset-name">Preset name</label
+        ><input
+          id="preset-name"
+          placeholder="e.g. Web-ready photos"
+          maxlength="60"
+          required
+          autocomplete="off"
+        />
+        <div class="dialog-actions">
+          <button class="secondary-button" type="button" id="cancel-preset">
+            Cancel</button
+          ><button class="convert-button" type="submit">Save preset</button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="help-dialog">
+      <h2>Your local media toolkit.</h2>
+      <p>
+        Drop files or folders anywhere in the window. Choose photo and video
+        output formats, adjust your settings, and convert the whole batch.<br /><br />Turn
+        off Bulk actions, then select a file to give it individual settings.
+        Each original stays safe, and duplicate output names are numbered
+        automatically.<br /><br /><strong>Ctrl+O</strong> adds files.
+        <strong>Ctrl+Enter</strong> starts a batch. <strong>/</strong> searches
+        your queue.
+      </p>
+      <div class="dialog-actions">
+        <button class="secondary-button" id="close-help">Got it</button>
+      </div>
+    </dialog>
+    <script>
+      "use strict";
+      const $ = (id) => document.getElementById(id);
+      const svg = (name, extra = "") =>
+        `<svg class="icon" ${extra}><use href="#i-${name}"/></svg>`;
+      const esc = (value) =>
+        String(value ?? "").replace(
+          /[&<>"']/g,
+          (char) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            })[char],
+        );
+      const bytes = (value) => {
+        if (!value) return "0 B";
+        const index = Math.min(3, Math.floor(Math.log(value) / Math.log(1024)));
+        return `${(value / 1024 ** index).toFixed(index && value / 1024 ** index < 10 ? 1 : 0)} ${["B", "KB", "MB", "GB"][index]}`;
+      };
+      const duration = (value) => {
+        if (!value) return "—";
+        if (value < 60) return `~${Math.max(1, Math.ceil(value))}s`;
+        return `~${Math.floor(value / 60)}m ${Math.round(value % 60)}s`;
+      };
+      const baseSettings = {
+        image_format: "jpeg",
+        video_format: "mp4",
+        audio_format: "mp3",
+        preset: "source",
+        scale: 100,
+        quality: 95,
+        max_width: 0,
+        output_dir: "",
+        preserve_metadata: true,
+      };
+      const state = {
+        ready: false,
+        preview: false,
+        view: "converter",
+        filter: "all",
+        search: "",
+        queue: null,
+        history: [],
+        presets: [],
+        settings: { ...baseSettings },
+        bulk: true,
+        selected: null,
+        preferences: { open_after: false },
+        revision: -1,
+        limit: 100,
+        wasRunning: false,
+        runSeen: false,
+        lastCompletedBatch: 0,
+        lastNotice: "",
+        pollBusy: false,
+        thumbs: new Map(),
+        thumbLoading: new Set(),
+        rowKey: "",
+        saveTimer: null,
+      };
+      const builtins = [
+        {
+          name: "Same as source",
+          icon: "image",
+          description:
+            "Original dimensions, high quality. Give your files a new format.",
+          settings: { ...baseSettings },
+          chip: "KEEP THE DETAILS",
+        },
+        {
+          name: "Compress",
+          icon: "bolt",
+          description:
+            "75% resolution and quality. A lighter batch, ready to share.",
+          settings: {
+            ...baseSettings,
+            preset: "compress",
+            scale: 75,
+            quality: 75,
+          },
+          chip: "MAKE SOME SPACE",
+        },
+        {
+          name: "Web-ready",
+          icon: "spark",
+          description:
+            "WEBP photos at 85% quality. Crisp, compact, and ready for the web.",
+          settings: {
+            ...baseSettings,
+            preset: "custom",
+            image_format: "webp",
+            scale: 100,
+            quality: 85,
+            max_width: 1920,
+          },
+          chip: "MADE TO SHARE",
+        },
+      ];
+      async function api(method, ...args) {
+        if (!state.ready) {
+          toast("Launch the desktop app to use native file controls.", "error");
+          return null;
+        }
+        try {
+          const result = await window.pywebview.api[method](...args);
+          if (result && result.ok === false) throw new Error(result.error);
+          return result;
+        } catch (error) {
+          toast(
+            error.message || "The operation could not be completed.",
+            "error",
+          );
+          return null;
+        }
+      }
+      function toast(message, type = "success") {
+        const item = document.createElement("div");
+        item.className = `toast ${type}`;
+        item.innerHTML =
+          svg(type === "error" ? "info" : "check") +
+          `<span>${esc(message)}</span>`;
+        $("toasts").append(item);
+        setTimeout(() => item.remove(), type === "error" ? 8000 : 4000);
+      }
+      function selectedItem() {
+        return state.queue?.items.find((item) => item.id === state.selected);
+      }
+      function currentSettings() {
+        const item = selectedItem();
+        return !state.bulk && item
+          ? { ...state.settings, ...(item.settings || {}) }
+          : state.settings;
+      }
+      function setView(view) {
+        state.view = view;
+        document.querySelectorAll('[id^="view-"]').forEach((element) => {
+          if (element.id !== "view-name")
+            element.hidden = element.id !== `view-${view}`;
+        });
+        $("view-name").textContent = {
+          converter: "CONVERTER",
+          history: "BATCH HISTORY",
+          presets: "PRESETS",
+          settings: "SETTINGS",
+        }[view];
+        document.querySelectorAll(".rail [data-view]").forEach((button) => {
+          button.classList.toggle("active", button.dataset.view === view);
+          if (button.dataset.view === view)
+            button.setAttribute("aria-current", "page");
+          else button.removeAttribute("aria-current");
+        });
+        if (view === "history") refreshHistory();
+        if (view === "presets") renderPresets();
+      }
+      function paintRange(id) {
+        const input = $(id);
+        const fraction =
+          ((input.value - input.min) / (input.max - input.min)) * 100;
+        input.style.background = `linear-gradient(to right,var(--accent) ${fraction}%,#151b1f ${fraction}%)`;
+      }
+      function syncControls() {
+        const settings = currentSettings();
+        $("image-format").value = settings.image_format;
+        $("video-format").value = settings.video_format;
+        $("audio-format").value = settings.audio_format || "mp3";
+        $("resolution").value = settings.scale;
+        $("quality").value = settings.quality;
+        $("max-width").value = settings.max_width;
+        $("resolution-value").value = `${settings.scale}%`;
+        $("quality-value").value = `${settings.quality}%`;
+        $("bulk-toggle").checked = state.bulk;
+        document
+          .querySelectorAll('[name="preset"]')
+          .forEach(
+            (radio) => (radio.checked = radio.value === settings.preset),
+          );
+        paintRange("resolution");
+        paintRange("quality");
+        $("output-path").textContent =
+          settings.output_dir || "Source folder / converted";
+        $("choose-output").title =
+          settings.output_dir ||
+          "Save to a converted folder next to each source";
+        $("reset-output").hidden = !settings.output_dir;
+        const item = selectedItem();
+        $("settings-context").hidden = state.bulk || !item;
+        $("settings-context").textContent = item
+          ? `Settings for ${item.name}`
+          : "";
+        $("bulk-description").textContent = state.bulk
+          ? "Apply settings to every file"
+          : item
+            ? "Editing selected file"
+            : "Select a file for individual settings";
+        $("preset-explanation").textContent = {
+          source:
+            "Keeps original dimensions at high quality. Output formats are selected above.",
+          compress:
+            "75% resolution and quality for a lighter file. Actual savings depend on the source.",
+          custom:
+            "Resolution applies to photos and videos. Quality controls lossy photo, video, and audio outputs. WAV, FLAC, and AIFF use lossless encoding.",
+        }[settings.preset];
+        const locked = Boolean(
+          state.queue?.running && (state.bulk || item?.locked),
+        );
+        document
+          .querySelectorAll(
+            ".settings-card input,.settings-card select,.settings-card button",
+          )
+          .forEach((element) => (element.disabled = locked));
+        $("bulk-toggle").disabled = Boolean(state.queue?.running);
+        const audioOnly = !state.bulk
+          ? item?.kind === "audio"
+          : Boolean(
+              state.queue?.items.length &&
+                state.queue.items.every((file) => file.kind === "audio"),
+            );
+        $("resolution").disabled = locked || audioOnly;
+        $("max-width").disabled = locked || audioOnly;
+        const losslessAudio =
+          audioOnly && ["wav", "flac", "aiff"].includes(settings.audio_format);
+        $("quality").disabled = locked || losslessAudio;
+        if (losslessAudio) $("quality-value").value = "Lossless";
+        document
+          .querySelector('[name="preset"][value="source"]')
+          .closest("label")
+          .querySelector(".preset-hint").textContent = audioOnly
+          ? "High quality"
+          : "Original size";
+        $("max-width").closest("label").hidden = settings.preset !== "custom";
+        $("preset-options-info").title = $("preset-explanation").textContent;
+        $("preserve-metadata").checked = state.settings.preserve_metadata;
+        $("open-after").checked = Boolean(state.preferences.open_after);
+      }
+      async function commitSettings(values) {
+        const item = selectedItem();
+        if (!state.bulk && item) {
+          if (item.locked) {
+            toast("Stop the batch before changing this file.", "error");
+            syncControls();
+            return;
+          }
+          const settings = { ...currentSettings(), ...values };
+          item.settings = settings;
+          const result = await api("set_item_settings", item.id, settings);
+          if (!result) return;
+          await poll(true);
+        } else {
+          Object.assign(state.settings, values);
+          scheduleSave();
+        }
+        syncControls();
+      }
+      function scheduleSave() {
+        clearTimeout(state.saveTimer);
+        state.saveTimer = setTimeout(() => savePreferences(), 350);
+      }
+      async function savePreferences() {
+        if (!state.ready) return;
+        return api("save_preferences", {
+          conversion: { ...state.settings },
+          bulk: state.bulk,
+          open_after: Boolean(state.preferences.open_after),
+        });
+      }
+      function applyPreset(settings) {
+        if (state.queue?.running) {
+          toast("Stop the batch before applying a preset.", "error");
+          return;
+        }
+        const existing = currentSettings();
+        commitSettings({
+          ...settings,
+          output_dir: existing.output_dir,
+          preserve_metadata: state.settings.preserve_metadata,
+        });
+        setView("converter");
+        toast("Preset applied. Your next batch is ready.");
+        syncControls();
+      }
+      function renderPresets() {
+        const card = (preset, index, custom) =>
+          `<article class="card preset-card"><div class="preset-icon">${svg(preset.icon || "sliders")}</div><h3>${esc(preset.name)}</h3><p>${esc(preset.description || `${preset.settings.image_format.toUpperCase()} photos · ${preset.settings.video_format.toUpperCase()} video · ${(preset.settings.audio_format || "mp3").toUpperCase()} audio · ${preset.settings.scale}% resolution · ${preset.settings.quality}% quality`)}</p><div class="preset-card-footer"><span class="preset-chip">${custom ? "YOUR PRESET" : preset.chip}</span><span>${custom ? `<button class="plain text-button" data-delete-preset="${index}" title="Delete preset" style="margin-right:12px;color:#8196a4">${svg("trash", 'style="width:13px;height:13px"')}</button>` : ""}<button class="text-button" data-apply-preset="${index}" data-custom="${custom}">Use preset ${svg("arrow", 'style="width:14px;height:14px"')}</button></span></div></article>`;
+        $("builtin-presets").innerHTML = builtins
+          .map((item, index) => card(item, index, false))
+          .join("");
+        $("custom-presets").innerHTML = state.presets
+          .map((item, index) => card(item, index, true))
+          .join("");
+        $("custom-count").textContent = state.presets.length;
+        $("custom-empty").hidden = Boolean(state.presets.length);
+      }
+      function statusClass(status) {
+        return status === "Done"
+          ? "done"
+          : status === "Error"
+            ? "error"
+            : status === "Converting..."
+              ? "converting"
+              : "";
+      }
+      function matches(item) {
+        const search = state.search.toLowerCase();
+        return (
+          (!search ||
+            `${item.name} ${item.format} ${item.target || ""} ${item.status}`
+              .toLowerCase()
+              .includes(search)) &&
+          (state.filter === "all" || item.kind === state.filter)
+        );
+      }
+      function rowHTML(item) {
+        return `<article class="file-row" data-id="${item.id}"><div class="file-main"><div class="thumbnail">${svg(item.kind === "audio" ? "audio" : item.kind === "video" ? "video" : "image")}</div><div class="file-info"><button class="filename" data-select="${item.id}" title="${esc(item.path)}">${esc(item.name)}</button><span class="file-detail"></span><span class="file-note" hidden></span></div></div><span class="format-pill ${item.kind === "video" ? "video" : item.kind === "audio" ? "audio" : ""}">${esc(item.format)}</span><div class="status-cell"><span class="status-tag"></span><div class="mini-progress" role="progressbar" aria-label="File conversion progress" aria-valuemin="0" aria-valuemax="100" hidden><span></span></div></div><button class="remove-button" aria-label="Remove ${esc(item.name)}" data-remove="${item.id}" title="Remove file">${svg("x")}</button></article>`;
+      }
+      const thumbnailObserver =
+        "IntersectionObserver" in window
+          ? new IntersectionObserver(
+              (entries) => {
+                for (const entry of entries) {
+                  if (entry.isIntersecting) {
+                    const row = entry.target;
+                    loadThumbnail(
+                      row.dataset.id,
+                      row.querySelector(".thumbnail"),
+                    );
+                    thumbnailObserver.unobserve(row);
+                  }
+                }
+              },
+              { root: $("queue-scroll"), rootMargin: "100px" },
+            )
+          : null;
+      async function loadThumbnail(identifier, element) {
+        if (!element || !state.ready || state.thumbLoading.has(identifier))
+          return;
+        if (state.thumbs.has(identifier)) {
+          showThumbnail(element, state.thumbs.get(identifier));
+          return;
+        }
+        const item = state.queue?.items.find((item) => item.id === identifier);
+        if (!item?.has_thumbnail) return;
+        state.thumbLoading.add(identifier);
+        try {
+          const value = await window.pywebview.api.get_thumbnail(identifier);
+          if (typeof value === "string") {
+            state.thumbs.set(identifier, value);
+            showThumbnail(element, value);
+          }
+        } catch {
+        } finally {
+          state.thumbLoading.delete(identifier);
+        }
+      }
+      function showThumbnail(element, value) {
+        if (!element.isConnected) return;
+        const image = document.createElement("img");
+        image.alt = "";
+        image.src = value;
+        element.replaceChildren(image);
+        if (element.closest(".file-row")?.querySelector(".format-pill.video"))
+          element.insertAdjacentHTML(
+            "beforeend",
+            `<span class="video-play">${svg("play")}</span>`,
+          );
+      }
+      function renderQueue() {
+        if (!state.queue) return;
+        const queue = state.queue;
+        const filtered = queue.items.filter(matches);
+        const visible = filtered.slice(0, state.limit);
+        const rowKey = visible.map((item) => item.id).join(",");
+        if (rowKey !== state.rowKey) {
+          thumbnailObserver?.disconnect();
+          $("queue-list").innerHTML = visible.map(rowHTML).join("");
+          state.rowKey = rowKey;
+          document.querySelectorAll(".file-row").forEach((row) => {
+            if (state.thumbs.has(row.dataset.id))
+              showThumbnail(
+                row.querySelector(".thumbnail"),
+                state.thumbs.get(row.dataset.id),
+              );
+            else if (thumbnailObserver) thumbnailObserver.observe(row);
+            else loadThumbnail(row.dataset.id, row.querySelector(".thumbnail"));
+          });
+        }
+        const byId = new Map(visible.map((item) => [item.id, item]));
+        document.querySelectorAll(".file-row").forEach((row) => {
+          const item = byId.get(row.dataset.id);
+          if (!item) return;
+          row.classList.toggle(
+            "selected",
+            !state.bulk && item.id === state.selected,
+          );
+          row.classList.toggle("editable", !state.bulk);
+          const details = [bytes(item.size)];
+          if (item.width) details.push(`${item.width} × ${item.height}`);
+          if ((item.kind === "video" || item.kind === "audio") && item.duration)
+            details.push(
+              `${Math.floor(item.duration / 60)}:${String(Math.floor(item.duration % 60)).padStart(2, "0")}`,
+            );
+          if (item.settings && !state.bulk) details.push("Custom settings");
+          if (item.kind === "audio" && item.sample_rate)
+            details.push(`${(item.sample_rate / 1000).toFixed(1)} kHz`);
+          if (item.kind === "audio" && item.channels)
+            details.push(
+              item.channels === 1
+                ? "Mono"
+                : item.channels === 2
+                  ? "Stereo"
+                  : `${item.channels} channels`,
+            );
+          row.querySelector(".file-detail").textContent = details.join(" · ");
+          const note = row.querySelector(".file-note");
+          note.textContent = item.error || item.note;
+          note.title = item.error || item.note;
+          note.hidden = !(item.error || item.note);
+          note.classList.toggle("file-error", Boolean(item.error));
+          const tag = row.querySelector(".status-tag");
+          tag.className = `status-tag ${statusClass(item.status)}`;
+          tag.textContent =
+            item.status === "Converting..."
+              ? `${Math.round(item.progress)}%`
+              : item.status;
+          tag.title = item.error || item.status;
+          const progress = row.querySelector(".mini-progress");
+          progress.hidden = item.status !== "Converting...";
+          progress.firstElementChild.style.width = `${item.progress}%`;
+          progress.setAttribute("aria-valuenow", item.progress);
+          const button = row.querySelector(".remove-button");
+          button.disabled = item.locked;
+          button.title = item.locked
+            ? "Stop the batch to remove this file"
+            : "Remove file";
+        });
+        $("queue-empty").hidden = Boolean(filtered.length);
+        $("queue-list-head").hidden = !filtered.length;
+        $("load-more").hidden = filtered.length <= state.limit;
+        if (!filtered.length) {
+          $("queue-empty").querySelector("h3").textContent = queue.items.length
+            ? "No matching files"
+            : "Your next batch starts here";
+          $("queue-empty").querySelector("p").innerHTML = queue.items.length
+            ? "Try another name, format, or filter."
+            : "Add your photos, videos, and audio above.<br>We’ll keep the originals safe.";
+        }
+        $("queue-count").textContent = queue.stats.total;
+        $("queue-caption").textContent = queue.importing
+          ? "Finding files and creating previews…"
+          : queue.running
+            ? `Converting batch · ${queue.stats.batch_done} of ${queue.stats.batch_total} finished`
+            : queue.stats.total
+              ? "Your media, ready for its next format."
+              : "A home for your next batch.";
+        $("filter-all").textContent = queue.stats.total;
+        $("filter-image").textContent = queue.stats.images;
+        $("filter-video").textContent = queue.stats.videos;
+        $("filter-audio").textContent = queue.stats.audios || 0;
+        $("queue-size").textContent =
+          `${queue.stats.total} file${queue.stats.total === 1 ? "" : "s"} · ${bytes(queue.stats.bytes)}`;
+        $("queue-clear").disabled = !queue.stats.done;
+        $("header-clear").disabled = !queue.stats.done;
+        $("retry-errors").hidden = !queue.stats.errors;
+        $("retry-errors").disabled = queue.running;
+        $("queue-list").classList.toggle("bulk-disabled", !state.bulk);
+      }
+      function renderSummary() {
+        const queue = state.queue;
+        if (!queue) return;
+        $("total-files").innerHTML =
+          `${queue.stats.total} <small>in queue</small>`;
+        $("estimated-time").textContent =
+          queue.stats.pending || queue.running
+            ? duration(queue.stats.eta)
+            : "—";
+        const button = $("convert-all");
+        button.disabled =
+          queue.cancelling ||
+          (!queue.running && (!queue.stats.pending || queue.importing));
+        button.classList.toggle("stop", queue.running);
+        button.innerHTML = queue.running
+          ? `${svg("stop")}<span>${queue.cancelling ? "STOPPING…" : "STOP CONVERSION"}</span>`
+          : `${svg("bolt")}<span>CONVERT ALL</span>${svg("arrow", 'style="width:15px;height:15px"')}`;
+        $("batch-track").hidden = !queue.running;
+        $("batch-progress").style.width = `${queue.stats.batch_progress}%`;
+        $("completion").hidden =
+          queue.running || !state.runSeen || !queue.stats.done;
+        $("completion-text").textContent = queue.stats.batch_errors
+          ? `${queue.stats.batch_success} done · ${queue.stats.batch_errors} error${queue.stats.batch_errors === 1 ? "" : "s"}`
+          : `${queue.stats.batch_success} file${queue.stats.batch_success === 1 ? "" : "s"} converted`;
+        const footer = $("footer-status");
+        if (queue.importing)
+          footer.innerHTML =
+            '<span class="spinner"></span> Reading your files and making previews…';
+        else if (queue.running)
+          footer.innerHTML = `<span class="spinner"></span> ${queue.cancelling ? "Stopping safely…" : `Converting locally · ${queue.stats.batch_progress}% complete`}`;
+        else {
+          footer.innerHTML =
+            svg("shield") +
+            `<span>${esc(queue.notice || "Ready when you are. Your files stay on your device.")}</span>`;
+        }
+        syncControls();
+      }
+      function renderCapabilities() {
+        const capabilities = state.queue?.capabilities;
+        if (!capabilities) return;
+        $("ffmpeg-banner").hidden = capabilities.ffmpeg;
+        $("tool-status").classList.toggle("ready", capabilities.ffmpeg);
+        $("tool-status").innerHTML =
+          svg(capabilities.ffmpeg ? "check" : "info") +
+          `<span>${esc(capabilities.ffmpeg ? capabilities.ffmpeg_path : "FFmpeg not found. Choose the executable to enable video and audio.")}</span>`;
+        Array.from($("image-format").options).forEach((option) => {
+          option.disabled = !capabilities.image_formats.includes(option.value);
+          option.title = option.disabled
+            ? "Unavailable in this Pillow installation"
+            : "";
+        });
+        ["choose-ffmpeg", "recheck-ffmpeg", "system-ffmpeg"].forEach(
+          (id) => ($(id).disabled = state.queue.running),
+        );
+      }
+      function acceptState(queue) {
+        if (queue.unchanged) return;
+        const ended =
+          !queue.running &&
+          queue.stats.batch_total > 0 &&
+          queue.stats.batch_id > state.lastCompletedBatch;
+        state.queue = queue;
+        state.revision = queue.revision;
+        if (state.selected && !selectedItem()) state.selected = null;
+        renderQueue();
+        renderSummary();
+        renderCapabilities();
+        if (ended) {
+          state.lastCompletedBatch = queue.stats.batch_id;
+          state.runSeen = true;
+          renderSummary();
+          refreshHistory();
+          if (queue.stats.batch_cancelled)
+            toast("Batch stopped. Remaining files are ready to retry.");
+          else
+            toast(
+              `Batch complete. ${queue.stats.batch_success} file${queue.stats.batch_success === 1 ? "" : "s"} converted${queue.stats.batch_errors ? `, ${queue.stats.batch_errors} need attention` : ""}.`,
+              queue.stats.batch_errors ? "error" : "success",
+            );
+          if (
+            state.preferences.open_after &&
+            queue.stats.batch_success &&
+            !queue.stats.batch_cancelled
+          )
+            api("open_output");
+        }
+        state.wasRunning = queue.running;
+        if (queue.running) state.runSeen = true;
+      }
+      async function poll(force = false) {
+        if (!state.ready || state.pollBusy) return;
+        state.pollBusy = true;
+        try {
+          const result = await window.pywebview.api.get_state(
+            force ? -1 : state.revision,
+          );
+          if (result?.ok === false) throw new Error(result.error);
+          acceptState(result);
+          $("connection-banner").hidden = true;
+        } catch {
+          $("connection-banner").hidden = false;
+        } finally {
+          state.pollBusy = false;
+        }
+      }
+      async function refreshHistory() {
+        if (state.ready) {
+          const result = await api("get_history");
+          if (result) state.history = result.history;
+        }
+        renderHistory();
+      }
+      function renderHistory() {
+        const completed = state.history.filter(
+          (item) => item.status === "Done",
+        );
+        const saved = completed.reduce(
+          (sum, item) => sum + (item.size || 0) - (item.output_size || 0),
+          0,
+        );
+        $("history-summary").innerHTML =
+          `<div class="card history-stat"><span>Files converted</span><strong>${completed.length}</strong></div><div class="card history-stat"><span>Output size</span><strong>${bytes(completed.reduce((sum, item) => sum + (item.output_size || 0), 0))}</strong></div><div class="card history-stat"><span>${saved >= 0 ? "Space saved" : "Additional space used"}</span><strong style="color:#82c7b9">${bytes(Math.abs(saved))}</strong></div>`;
+        const records = state.history.filter((item) => {
+          const query = state.search.toLowerCase();
+          return (
+            !query ||
+            `${item.name} ${item.format} ${item.target}`
+              .toLowerCase()
+              .includes(query)
+          );
+        });
+        $("clear-history").disabled = !state.history.length;
+        $("history-list").innerHTML = records.length
+          ? records
+              .map(
+                (item, index) =>
+                  `<article class="history-row"><div class="file-main">${svg(item.kind === "audio" ? "audio" : item.kind === "video" ? "video" : "image")}<div class="file-info"><span class="filename" title="${esc(item.path)}">${esc(item.name)}</span><span class="file-detail ${item.status === "Error" ? "file-error" : ""}" title="${esc(item.error || item.output)}">${esc(item.error || `${bytes(item.size)} → ${bytes(item.output_size)}`)}</span></div></div><span class="format-route">${esc(item.format)}${svg("arrow")}${esc((item.target || "").toUpperCase())}</span><span class="history-date">${esc(new Date(item.finished_at).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }))}</span><span class="status-tag ${statusClass(item.status)}">${esc(item.status)}</span><div class="history-actions">${item.output ? `<button data-history-open="${esc(item.id)}" title="Open output folder" aria-label="Open output folder for ${esc(item.name)}">${svg("folder")}</button>` : ""}<button data-history-retry="${esc(item.id)}" title="Add original to queue again" aria-label="Requeue ${esc(item.name)}">${svg("refresh")}</button></div></article>`,
+              )
+              .join("")
+          : `<div class="queue-empty" style="min-height:280px"><div class="empty-icon">${svg("history")}</div><h3>${state.search ? "No matching conversions" : "Every batch has a story"}</h3><p>${state.search ? "Try searching for another file or format." : "Your completed conversions will appear here."}</p></div>`;
+      }
+      function openPresetDialog() {
+        if (state.queue?.running) {
+          toast("Stop the batch before saving a preset.", "error");
+          return;
+        }
+        $("preset-name").value = "";
+        $("preset-dialog").showModal();
+        $("preset-name").focus();
+      }
+      async function convert() {
+        if (!state.ready) return api("start_conversion");
+        if (state.queue?.running) {
+          await api("cancel_conversion");
+          await poll(true);
+          return;
+        }
+        if (!state.queue?.stats.pending || state.queue.importing) return;
+        clearTimeout(state.saveTimer);
+        await savePreferences();
+        const result = await api(
+          "start_conversion",
+          { ...state.settings },
+          state.bulk,
+        );
+        if (result) {
+          state.runSeen = true;
+          await poll(true);
+        }
+      }
+      document.addEventListener("click", async (event) => {
+        const view = event.target.closest("[data-view]");
+        if (view) {
+          setView(view.dataset.view);
+          return;
+        }
+        const native = event.target.closest("[data-native]");
+        if (native) {
+          await api(native.dataset.native);
+          return;
+        }
+        const filter = event.target.closest("[data-filter]");
+        if (filter) {
+          state.filter = filter.dataset.filter;
+          state.limit = 100;
+          document
+            .querySelectorAll("[data-filter]")
+            .forEach((button) =>
+              button.classList.toggle("active", button === filter),
+            );
+          renderQueue();
+          return;
+        }
+        const remove = event.target.closest("[data-remove]");
+        if (remove) {
+          await api("remove_file", remove.dataset.remove);
+          await poll(true);
+          return;
+        }
+        const select = event.target.closest(
+          "[data-select],.editable .file-main",
+        );
+        if (select && !state.bulk) {
+          const identifier =
+            select.dataset.select || select.closest(".file-row").dataset.id;
+          state.selected = identifier;
+          syncControls();
+          renderQueue();
+          return;
+        }
+        const apply = event.target.closest("[data-apply-preset]");
+        if (apply) {
+          const preset = (
+            apply.dataset.custom === "true" ? state.presets : builtins
+          )[Number(apply.dataset.applyPreset)];
+          if (preset) applyPreset(preset.settings);
+          return;
+        }
+        const deletion = event.target.closest("[data-delete-preset]");
+        if (deletion) {
+          const preset = state.presets[Number(deletion.dataset.deletePreset)];
+          if (preset) {
+            const result = await api("delete_preset", preset.name);
+            if (result) {
+              state.presets = result.presets;
+              renderPresets();
+              toast("Preset removed.");
+            }
+          }
+          return;
+        }
+        const open = event.target.closest("[data-history-open]");
+        if (open) {
+          api("open_output", open.dataset.historyOpen);
+          return;
+        }
+        const retry = event.target.closest("[data-history-retry]");
+        if (retry) {
+          const result = await api(
+            "requeue_history",
+            retry.dataset.historyRetry,
+          );
+          if (result) {
+            setView("converter");
+            await poll(true);
+          }
+          return;
+        }
+      });
+      $("add-files").onclick = async () => {
+        await api("add_files");
+        await poll(true);
+      };
+      $("add-folders").onclick = async () => {
+        await api("add_folders");
+        await poll(true);
+      };
+      for (const id of ["header-output", "completion-output"])
+        $(id).onclick = () => api("open_output");
+      for (const id of ["header-clear", "queue-clear"])
+        $(id).onclick = async () => {
+          await api("clear_completed");
+          await poll(true);
+        };
+      $("retry-errors").onclick = async () => {
+        await api("retry_errors");
+        await poll(true);
+      };
+      $("convert-all").onclick = convert;
+      $("search").addEventListener("input", (event) => {
+        state.search = event.target.value;
+        state.limit = 100;
+        renderQueue();
+        if (state.view === "history") renderHistory();
+      });
+      $("load-more").onclick = () => {
+        state.limit += 100;
+        renderQueue();
+      };
+      $("bulk-toggle").onchange = async (event) => {
+        state.bulk = event.target.checked;
+        if (!state.bulk && !state.selected)
+          state.selected =
+            state.queue?.items.find((item) => !item.locked)?.id || null;
+        syncControls();
+        renderQueue();
+        await savePreferences();
+      };
+      $("image-format").onchange = (event) =>
+        commitSettings({ image_format: event.target.value });
+      $("video-format").onchange = (event) =>
+        commitSettings({ video_format: event.target.value });
+      $("audio-format").onchange = (event) =>
+        commitSettings({ audio_format: event.target.value });
+      document.querySelectorAll('[name="preset"]').forEach(
+        (input) =>
+          (input.onchange = () => {
+            const values =
+              input.value === "source"
+                ? { preset: "source", scale: 100, quality: 95, max_width: 0 }
+                : input.value === "compress"
+                  ? { preset: "compress", scale: 75, quality: 75, max_width: 0 }
+                  : { preset: "custom" };
+            commitSettings(values);
+          }),
+      );
+      for (const [id, key] of [
+        ["resolution", "scale"],
+        ["quality", "quality"],
+      ]) {
+        $(id).oninput = () => {
+          const value = Number($(id).value);
+          $(id === "resolution" ? "resolution-value" : "quality-value").value =
+            `${value}%`;
+          paintRange(id);
+          document.querySelector('[name="preset"][value="custom"]').checked =
+            true;
+        };
+        $(id).onchange = () =>
+          commitSettings({ [key]: Number($(id).value), preset: "custom" });
+      }
+      $("max-width").onchange = () => {
+        const value = Number($("max-width").value);
+        if (
+          !Number.isInteger(value) ||
+          (value !== 0 && (value < 64 || value > 16384))
+        ) {
+          toast(
+            "Maximum width must be 0 or between 64 and 16384 pixels.",
+            "error",
+          );
+          syncControls();
+          return;
+        }
+        commitSettings({ max_width: value, preset: "custom" });
+      };
+      $("choose-output").onclick = async () => {
+        const result = await api("choose_output_folder");
+        if (result?.path) await commitSettings({ output_dir: result.path });
+      };
+      $("reset-output").onclick = () => commitSettings({ output_dir: "" });
+      for (const id of ["save-preset", "new-preset"])
+        $(id).onclick = openPresetDialog;
+      $("cancel-preset").onclick = () => $("preset-dialog").close();
+      $("preset-form").onsubmit = async (event) => {
+        event.preventDefault();
+        const name = $("preset-name").value.trim();
+        if (!name) return;
+        const settings = { ...currentSettings(), output_dir: "" };
+        const result = await api("save_preset", name, settings);
+        if (result) {
+          state.presets = result.presets;
+          $("preset-dialog").close();
+          renderPresets();
+          toast(`Saved “${name}”.`);
+        }
+      };
+      $("clear-history").onclick = async () => {
+        const result = await api("clear_history");
+        if (result) {
+          state.history = [];
+          renderHistory();
+          toast("Conversion history cleared. Your files are untouched.");
+        }
+      };
+      $("preserve-metadata").onchange = (event) => {
+        state.settings.preserve_metadata = event.target.checked;
+        scheduleSave();
+      };
+      $("open-after").onchange = (event) => {
+        state.preferences.open_after = event.target.checked;
+        scheduleSave();
+      };
+      for (const [id, method] of [
+        ["choose-ffmpeg", "choose_ffmpeg"],
+        ["recheck-ffmpeg", "check_ffmpeg"],
+        ["system-ffmpeg", "use_system_ffmpeg"],
+      ])
+        $(id).onclick = async () => {
+          const button = $(id);
+          button.disabled = true;
+          const result = await api(method);
+          await poll(true);
+          button.disabled = Boolean(state.queue?.running);
+          if (result && !result.cancelled)
+            toast(
+              result.capabilities.ffmpeg
+                ? "FFmpeg is ready. Video and audio conversion are enabled."
+                : "FFmpeg was not found. Choose an executable to enable video and audio.",
+              result.capabilities.ffmpeg ? "success" : "error",
+            );
+        };
+      $("ffmpeg-help").onclick = () => api("ffmpeg_help");
+      $("help-button").onclick = () => $("help-dialog").showModal();
+      $("close-help").onclick = () => $("help-dialog").close();
+      document.addEventListener("keydown", (event) => {
+        const editing = ["INPUT", "SELECT", "TEXTAREA"].includes(
+          document.activeElement.tagName,
+        );
+        if (
+          event.key === "/" &&
+          !editing &&
+          !document.querySelector("dialog[open]")
+        ) {
+          event.preventDefault();
+          $("search").focus();
+        }
+        if (
+          (event.ctrlKey || event.metaKey) &&
+          event.key.toLowerCase() === "o"
+        ) {
+          event.preventDefault();
+          $("add-files").click();
+        }
+        if (
+          (event.ctrlKey || event.metaKey) &&
+          event.key === "Enter" &&
+          !document.querySelector("dialog[open]")
+        ) {
+          event.preventDefault();
+          convert();
+        }
+      });
+      let dragDepth = 0;
+      document.addEventListener("dragenter", (event) => {
+        event.preventDefault();
+        if (event.dataTransfer?.types.includes("Files")) {
+          dragDepth++;
+          $("drop-zone").classList.add("dragging");
+        }
+      });
+      document.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        if (event.dataTransfer) event.dataTransfer.dropEffect = "copy";
+      });
+      document.addEventListener("dragleave", (event) => {
+        event.preventDefault();
+        dragDepth = Math.max(0, dragDepth - 1);
+        if (!dragDepth) $("drop-zone").classList.remove("dragging");
+      });
+      document.addEventListener("drop", (event) => {
+        event.preventDefault();
+        dragDepth = 0;
+        $("drop-zone").classList.remove("dragging");
+        if (state.preview)
+          toast("Drag files into the desktop app to import them.", "error");
+      });
+      async function initialize() {
+        if (state.ready) return;
+        state.ready = true;
+        try {
+          const result = await window.pywebview.api.bootstrap();
+          if (!result || result.ok === false)
+            throw new Error(
+              result?.error || "The desktop app could not initialize.",
+            );
+          state.preview = false;
+          $("preview-note").hidden = true;
+          state.settings = {
+            ...baseSettings,
+            ...result.preferences.conversion,
+          };
+          state.bulk = result.preferences.bulk !== false;
+          state.preferences = result.preferences;
+          state.history = result.history;
+          state.presets = result.presets;
+          acceptState(result.state);
+          syncControls();
+          renderPresets();
+          renderHistory();
+          setInterval(() => poll(), 450);
+        } catch (error) {
+          state.ready = false;
+          $("footer-status").textContent = error.message;
+          toast(error.message, "error");
+        }
+      }
+      window.addEventListener("pywebviewready", initialize);
+      if (window.pywebview?.api) initialize();
+      setTimeout(() => {
+        if (!state.ready) {
+          state.preview = true;
+          $("preview-note").hidden = false;
+          $("footer-status").innerHTML =
+            svg("shield") +
+            "<span>Desktop preview · Launch the app for local conversion.</span>";
+          renderPresets();
+          renderHistory();
+        }
+      }, 1800);
+      syncControls();
+    </script>
+  </body>
+</html>
